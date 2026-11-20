@@ -1,0 +1,2354 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>儲互社選務勇者傳：奪回大圖記！｜典藏繪本 RPG</title>
+<meta name="description" content="以 115.10.03 最新版儲蓄互助社選舉罷免辦法、章程範例與幹部移交實務打造的奇幻繪本冒險 RPG！透過探索小鎮與法規卡牌對決，輕鬆精通選務與移交規範。" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="儲互社選務勇者傳：奪回大圖記！" />
+<meta property="og:description" content="115.10.03 最新法規繪本冒險 RPG｜巡歷六大據點、收集六大移交清冊、擊破抗不移交魔王！" />
+<meta property="og:url" content="https://cu-election-rpg.pages.dev/" />
+<meta property="og:image" content="https://cu-election-rpg.pages.dev/assets_art/og_cover.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="preload" as="image" href="./assets_art/title_keyart.webp" />
+<style>
+  :root {
+    --parchment: #fbf5e6;
+    --parchment-deep: #efe3c8;
+    --gold: #c8963e;
+    --gold-bright: #f7d97e;
+    --gold-dark: #7a5216;
+    --emerald: #14532d;
+    --emerald-mid: #1e6b43;
+    --crimson: #8f1d21;
+    --crimson-bright: #dc2626;
+    --navy: #142038;
+    --ink: #231b12;
+    --muted: #655744;
+    --font-scale: 1;
+    --serif: "Noto Serif TC", "PMingLiU", "DFKai-SB", Georgia, serif;
+    --sans: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", system-ui, sans-serif;
+  }
+
+  body.large-text { --font-scale: 1.15; }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+    background: #101622;
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: calc(15px * var(--font-scale));
+    overflow-x: hidden;
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), filter 0.16s ease, box-shadow 0.16s ease;
+  }
+  button:active { transform: scale(0.96); }
+
+  .hidden { display: none !important; }
+
+  /* =========================================================
+     1. 商業級全螢幕電影感開場標題畫面 (Title Screen)
+  ========================================================= */
+  #titleScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 36px 20px 32px;
+    background: #0e1621;
+  }
+
+  .title-bg {
+    position: absolute;
+    inset: -4%;
+    background: url("./assets_art/title_keyart.webp") center center / cover no-repeat;
+    animation: kenBurns 22s ease-in-out infinite alternate;
+    filter: brightness(0.92) saturate(1.06);
+  }
+
+  @keyframes kenBurns {
+    0% { transform: scale(1.0) translate(0, 0); }
+    100% { transform: scale(1.08) translate(-1.5%, -1%); }
+  }
+
+  .title-vignette {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 50% 42%, transparent 25%, rgba(12, 18, 28, 0.68) 100%),
+      linear-gradient(180deg, rgba(12, 18, 28, 0.55) 0%, transparent 32%, transparent 62%, rgba(12, 18, 28, 0.88) 100%);
+    pointer-events: none;
+  }
+
+  #ambientCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .title-crest-wrap {
+    position: relative;
+    z-index: 4;
+    text-align: center;
+    margin-top: 2vh;
+    padding: 20px 38px 22px;
+    border-radius: 22px;
+    background: radial-gradient(ellipse at center, rgba(16, 26, 44, 0.72) 0%, rgba(16, 26, 44, 0.36) 65%, transparent 100%);
+    backdrop-filter: blur(3px);
+  }
+
+  .title-edition-ribbon {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(90deg, #14532d, #8f1d21);
+    color: #fff9db;
+    border: 2px solid var(--gold-bright);
+    padding: 6px 20px;
+    border-radius: 999px;
+    font-weight: 900;
+    font-size: calc(0.88rem * var(--font-scale));
+    letter-spacing: 2px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
+    margin-bottom: 12px;
+  }
+
+  .game-logo {
+    font-family: var(--serif);
+    font-size: clamp(2.3rem, 5.4vw, 4.2rem);
+    font-weight: 900;
+    margin: 0;
+    letter-spacing: 5px;
+    color: #fff6cf;
+    text-shadow:
+      0 3px 0 #7a4b0b,
+      0 6px 0 #3b2004,
+      0 10px 26px rgba(0, 0, 0, 0.92),
+      0 0 28px rgba(247, 217, 126, 0.65);
+    line-height: 1.18;
+  }
+
+  .game-subtitle {
+    margin: 10px 0 0;
+    font-family: var(--serif);
+    font-size: clamp(1.05rem, 2.2vw, 1.48rem);
+    color: #fef3c7;
+    letter-spacing: 5px;
+    font-weight: 800;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95), 0 0 14px rgba(0, 0, 0, 0.8);
+  }
+
+  .title-menu {
+    position: relative;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 440px;
+  }
+
+  .btn-storybook-primary {
+    width: 100%;
+    background: linear-gradient(180deg, #f6d57a 0%, #c88d2c 55%, #9a6516 100%);
+    color: #221404;
+    border: 2.5px solid #fff7d6;
+    border-radius: 14px;
+    padding: 15px 28px;
+    font-family: var(--serif);
+    font-size: calc(1.24rem * var(--font-scale));
+    font-weight: 900;
+    letter-spacing: 2px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  }
+  .btn-storybook-primary:hover {
+    transform: translateY(-3px) scale(1.02);
+    filter: brightness(1.08);
+    box-shadow: 0 12px 34px rgba(247, 217, 126, 0.38);
+  }
+
+  .title-sub-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .btn-storybook-glass {
+    background: rgba(18, 28, 44, 0.78);
+    backdrop-filter: blur(8px);
+    color: #fef3c7;
+    border: 1.5px solid rgba(247, 217, 126, 0.65);
+    border-radius: 12px;
+    padding: 11px 14px;
+    font-weight: 800;
+    font-size: calc(0.92rem * var(--font-scale));
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  }
+  .btn-storybook-glass:hover {
+    background: rgba(30, 58, 95, 0.88);
+    border-color: #fff7d6;
+    transform: translateY(-2px);
+  }
+
+  .title-credit {
+    position: relative;
+    z-index: 4;
+    color: rgba(254, 243, 199, 0.85);
+    font-size: 0.82rem;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+    text-align: center;
+  }
+
+  /* =========================================================
+     2. 商業繪本 HUD & 手繪互動大世界地圖 (Overworld Map)
+  ========================================================= */
+  #mapScreen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: radial-gradient(circle at 50% 0%, #24334a 0%, #101723 100%);
+  }
+
+  .studio-hud {
+    background: linear-gradient(180deg, rgba(20, 30, 48, 0.97) 0%, rgba(14, 22, 36, 0.95) 100%);
+    border-bottom: 2.5px solid var(--gold);
+    padding: 8px 16px;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
+    position: sticky;
+    top: 0;
+    z-index: 30;
+  }
+
+  .studio-hud-inner {
+    max-width: 1240px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .hero-hud-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-avatar-mini {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2.5px solid var(--gold-bright);
+    object-fit: cover;
+    object-position: center 15%;
+    box-shadow: 0 0 14px rgba(247, 217, 126, 0.45);
+    background: #fbf5e6;
+    flex-shrink: 0;
+  }
+
+  .hud-lv-line {
+    font-family: var(--serif);
+    color: var(--gold-bright);
+    font-weight: 900;
+    font-size: calc(0.95rem * var(--font-scale));
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .hud-bars-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 3px;
+    flex-wrap: wrap;
+  }
+
+  .bar-mini-wrap {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #e2e8f0;
+    font-size: 0.78rem;
+    font-weight: 800;
+  }
+
+  .bar-mini-track {
+    width: 86px;
+    height: 9px;
+    background: #0b111c;
+    border: 1px solid rgba(247, 217, 126, 0.45);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .bar-mini-fill { height: 100%; transition: width 0.35s ease; }
+
+  .hud-relic-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(200, 150, 62, 0.16);
+    border: 1px solid rgba(247, 217, 126, 0.5);
+    color: #fef3c7;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+  .hud-relic-pill img { width: 20px; height: 20px; object-fit: contain; }
+
+  .hud-btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .hud-btn {
+    background: rgba(255, 250, 235, 0.1);
+    color: #fef3c7;
+    border: 1px solid rgba(247, 217, 126, 0.45);
+    border-radius: 10px;
+    padding: 6px 11px;
+    font-size: calc(0.8rem * var(--font-scale));
+    font-weight: 800;
+  }
+  .hud-btn:hover { background: rgba(247, 217, 126, 0.22); }
+  .hud-btn.gold {
+    background: linear-gradient(180deg, #f6d57a, #c88d2c);
+    color: #231504;
+    border-color: #fff6d1;
+  }
+
+  /* 大世界地圖畫框 */
+  .overworld-shell {
+    max-width: 1240px;
+    width: 100%;
+    margin: 12px auto 26px;
+    padding: 0 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .quest-scroll-bar {
+    background: linear-gradient(90deg, #fbf5e6 0%, #f3e4c3 100%);
+    border: 2.5px solid var(--gold);
+    border-radius: 14px;
+    padding: 9px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), inset 0 0 0 2px rgba(255, 255, 255, 0.7);
+  }
+
+  .quest-scroll-text {
+    font-weight: 800;
+    color: #2b1d0c;
+    font-size: calc(0.95rem * var(--font-scale));
+  }
+
+  .map-viewport {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 4px solid var(--gold);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), inset 0 0 0 2px rgba(255, 248, 220, 0.5);
+    background: #1a2d24;
+  }
+
+  .map-bg-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .map-sunlight-layer {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 22% 14%, rgba(255, 244, 200, 0.22), transparent 55%);
+    pointer-events: none;
+  }
+
+  .map-paths-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .quest-path-line {
+    fill: none;
+    stroke: rgba(255, 245, 205, 0.85);
+    stroke-width: 4;
+    stroke-dasharray: 10 8;
+    stroke-linecap: round;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.65));
+    animation: marchPath 22s linear infinite;
+  }
+  @keyframes marchPath {
+    to { stroke-dashoffset: -360; }
+  }
+
+  /* 地圖可點選據點（帶商業角色頭像徽章） */
+  .map-node {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: none;
+    padding: 0;
+  }
+
+  .node-ring {
+    position: relative;
+    width: clamp(54px, 6.2vw, 82px);
+    height: clamp(54px, 6.2vw, 82px);
+    border-radius: 50%;
+    border: 3.5px solid var(--gold-bright);
+    background: #fbf5e6;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.6), 0 0 0 4px rgba(20, 32, 56, 0.55);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .map-node:hover .node-ring {
+    transform: scale(1.12) translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.72), 0 0 22px rgba(247, 217, 126, 0.9);
+  }
+
+  .map-node.active-quest .node-ring {
+    animation: beaconPulse 1.8s infinite;
+  }
+
+  @keyframes beaconPulse {
+    0%, 100% { box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6), 0 0 0 0 rgba(253, 224, 71, 0.85); }
+    65% { box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6), 0 0 0 15px rgba(253, 224, 71, 0); }
+  }
+
+  .map-node.cleared .node-ring {
+    border-color: #4ade80;
+    filter: saturate(0.85);
+  }
+
+  .map-node.final-boss .node-ring {
+    width: clamp(64px, 7.2vw, 96px);
+    height: clamp(64px, 7.2vw, 96px);
+    border-color: #fca5a5;
+    box-shadow: 0 10px 26px rgba(143, 29, 33, 0.85), 0 0 24px rgba(239, 68, 68, 0.8);
+  }
+
+  .node-ring img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 15%;
+  }
+
+  .node-status-tag {
+    position: absolute;
+    top: -16px;
+    z-index: 4;
+    background: linear-gradient(180deg, #ef4444, #991b1b);
+    color: #fff;
+    border: 1.5px solid #fef08a;
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: clamp(0.68rem, 0.9vw, 0.78rem);
+    font-weight: 900;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.58);
+    white-space: nowrap;
+  }
+  .map-node.cleared .node-status-tag {
+    background: linear-gradient(180deg, #16a34a, #14532d);
+    border-color: #bbf7d0;
+  }
+
+  .node-label {
+    margin-top: 5px;
+    background: linear-gradient(180deg, rgba(251, 245, 230, 0.96), rgba(235, 220, 186, 0.96));
+    color: #241709;
+    border: 1.5px solid var(--gold-dark);
+    border-radius: 8px;
+    padding: 2px 9px;
+    font-weight: 900;
+    font-size: clamp(0.7rem, 1vw, 0.86rem);
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.55);
+  }
+
+  /* 3D 寶箱圖釘 */
+  .map-chest {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    background: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .map-chest::before {
+    content: "";
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(254, 240, 138, 0.72) 0%, rgba(245, 158, 11, 0.25) 55%, transparent 75%);
+    animation: chestAura 2s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .map-chest.opened::before { display: none; }
+  @keyframes chestAura {
+    0%, 100% { transform: scale(0.92); opacity: 0.75; }
+    50% { transform: scale(1.25); opacity: 1; }
+  }
+
+  .map-chest img {
+    position: relative;
+    z-index: 1;
+    width: clamp(40px, 4.5vw, 56px);
+    height: clamp(40px, 4.5vw, 56px);
+    object-fit: contain;
+    filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.72)) drop-shadow(0 0 12px rgba(253, 224, 71, 0.85));
+    animation: floatChest 2.4s ease-in-out infinite;
+    transition: transform 0.2s ease, opacity 0.3s ease;
+  }
+  .map-chest:hover img { transform: scale(1.2); }
+  .map-chest.opened img {
+    animation: none;
+    filter: grayscale(0.9) opacity(0.55);
+  }
+
+  @keyframes floatChest {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  /* 主角在地圖上平滑移動的精緻棋子 */
+  .map-hero-token {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    z-index: 9;
+    pointer-events: none;
+    transition: left 0.85s cubic-bezier(0.25, 0.9, 0.3, 1), top 0.85s cubic-bezier(0.25, 0.9, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .map-hero-token img {
+    width: clamp(46px, 5vw, 64px);
+    height: clamp(46px, 5vw, 64px);
+    border-radius: 50%;
+    border: 3.5px solid #38bdf8;
+    object-fit: cover;
+    object-position: center 15%;
+    box-shadow: 0 0 0 3px #fff, 0 8px 20px rgba(0, 0, 0, 0.75);
+    animation: heroHover 1.6s ease-in-out infinite;
+    background: #fbf5e6;
+  }
+
+  @keyframes heroHover {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+
+  .map-hero-badge {
+    margin-top: 3px;
+    background: linear-gradient(180deg, #0284c7, #0369a1);
+    color: #fff;
+    border: 1.5px solid #e0f2fe;
+    border-radius: 999px;
+    padding: 1px 8px;
+    font-size: 0.68rem;
+    font-weight: 900;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.6);
+    white-space: nowrap;
+  }
+
+  .map-toast {
+    position: absolute;
+    top: 12px;
+    left: 14px;
+    transform: translateY(-10px);
+    z-index: 20;
+    background: linear-gradient(180deg, rgba(20, 32, 56, 0.94), rgba(12, 20, 34, 0.94));
+    color: var(--gold-bright);
+    border: 2px solid var(--gold-bright);
+    border-radius: 999px;
+    padding: 7px 16px;
+    font-weight: 900;
+    font-size: calc(0.86rem * var(--font-scale));
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.58);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+    max-width: 48%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .map-toast.show { opacity: 1; transform: translateY(0); }
+
+  /* =========================================================
+     3. 商業級 JRPG 劇院戰鬥舞台 (Ni no Kuni × Ace Attorney × Hearthstone)
+  ========================================================= */
+  #battleScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: none;
+    flex-direction: column;
+    background: #0c121e;
+    overflow-y: auto;
+  }
+  #battleScreen.open { display: flex; }
+
+  .battle-bg {
+    position: fixed;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.74) saturate(1.08);
+    z-index: 0;
+  }
+  .battle-bg-shade {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10, 15, 28, 0.72) 0%, rgba(10, 15, 28, 0.22) 38%, rgba(10, 15, 28, 0.88) 100%);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  #vfxCanvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 25;
+  }
+
+  .battle-inner {
+    position: relative;
+    z-index: 5;
+    max-width: 1120px;
+    width: 100%;
+    margin: auto;
+    padding: 10px 16px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .battle-inner.hit-shake {
+    animation: stageShake 0.38s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  }
+  @keyframes stageShake {
+    0%, 100% { transform: translate(0, 0); }
+    15% { transform: translate(-10px, 5px); }
+    35% { transform: translate(10px, -5px); }
+    55% { transform: translate(-6px, -3px); }
+    75% { transform: translate(6px, 3px); }
+  }
+
+  /* 格鬥遊戲級雙層延遲血條 */
+  .battle-bars-top {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 14px;
+    align-items: center;
+  }
+
+  .combatant-bar-box {
+    background: linear-gradient(180deg, rgba(20, 30, 48, 0.88), rgba(12, 18, 30, 0.92));
+    border: 2px solid var(--gold);
+    border-radius: 14px;
+    padding: 10px 14px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
+  }
+  .combatant-bar-box.boss { border-color: #f87171; }
+
+  .cb-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 900;
+    color: #fef3c7;
+    font-size: calc(0.95rem * var(--font-scale));
+  }
+
+  .dual-hp-track {
+    position: relative;
+    height: 16px;
+    background: #090d16;
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1.5px solid rgba(255, 245, 205, 0.45);
+    margin-top: 6px;
+  }
+  .dual-hp-ghost {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: #fef08a;
+    transition: width 0.85s ease 0.25s;
+  }
+  .dual-hp-main {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: linear-gradient(90deg, #16a34a, #4ade80);
+    transition: width 0.22s ease;
+  }
+  .combatant-bar-box.boss .dual-hp-main {
+    background: linear-gradient(90deg, #b91c1c, #f97316);
+  }
+
+  .round-emblem {
+    background: linear-gradient(180deg, #f6d57a, #b4771e);
+    color: #231404;
+    border: 2px solid #fff7d6;
+    border-radius: 14px;
+    padding: 7px 14px;
+    text-align: center;
+    font-family: var(--serif);
+    font-weight: 900;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  }
+
+  /* 雙人高畫質手繪立繪對峙區 */
+  .portraits-stage {
+    display: grid;
+    grid-template-columns: 1fr 140px 1fr;
+    align-items: end;
+    gap: 10px;
+    min-height: 220px;
+  }
+
+  .portrait-frame {
+    position: relative;
+    margin: 0 auto;
+    width: clamp(180px, 21vw, 240px);
+    height: clamp(210px, 23vw, 272px);
+    border-radius: 20px;
+    padding: 6px;
+    background: linear-gradient(145deg, #fce397 0%, #b57c25 45%, #fce397 100%);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.72);
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), filter 0.3s ease;
+    animation: breatheCard 3.6s ease-in-out infinite;
+  }
+
+  @keyframes breatheCard {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+
+  .portrait-frame.speaking {
+    filter: brightness(1.08) drop-shadow(0 0 22px rgba(247, 217, 126, 0.55));
+    z-index: 3;
+  }
+  .portrait-frame.dimmed {
+    filter: brightness(0.76) saturate(0.85);
+  }
+  .portrait-frame.lunge-right {
+    animation: none;
+    transform: translateX(48px) scale(1.06) rotate(2deg) !important;
+  }
+  .portrait-frame.hit-flash {
+    animation: bossRecoil 0.42s ease !important;
+    filter: brightness(2.2) contrast(1.2) !important;
+  }
+
+  @keyframes bossRecoil {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(26px) rotate(5deg); }
+    55% { transform: translateX(-14px) rotate(-3deg); }
+    100% { transform: translateX(0); }
+  }
+
+  .portrait-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 15px;
+    overflow: hidden;
+    position: relative;
+    background: #fbf5e6;
+    border: 2px solid #4a2e0b;
+  }
+
+  .portrait-inner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 14%;
+    display: block;
+  }
+
+  .portrait-nameplate {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(180deg, transparent, rgba(16, 22, 34, 0.92) 38%);
+    color: #fef3c7;
+    padding: 18px 10px 8px;
+    text-align: center;
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: calc(0.96rem * var(--font-scale));
+    letter-spacing: 1px;
+  }
+
+  .vs-medallion {
+    align-self: center;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .vs-medallion-orb {
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(254, 240, 138, 0.28) 0%, rgba(20, 32, 56, 0.72) 68%, rgba(20, 32, 56, 0.9) 100%);
+    border: 2px solid rgba(247, 217, 126, 0.75);
+    box-shadow: 0 0 28px rgba(247, 217, 126, 0.38), inset 0 0 14px rgba(254, 240, 138, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .vs-medallion img {
+    width: 82px;
+    height: 82px;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.85));
+    animation: floatChest 2.8s ease-in-out infinite;
+  }
+  .vs-relic-tag {
+    background: rgba(16, 24, 40, 0.86);
+    color: var(--gold-bright);
+    border: 1px solid rgba(247, 217, 126, 0.65);
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 0.74rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  /* 繪本羊皮紙劇院對話框 */
+  .storybook-dialogue {
+    background: linear-gradient(180deg, #fffdf7 0%, #f4e6c8 100%);
+    color: var(--ink);
+    border: 3px solid var(--gold);
+    border-radius: 16px;
+    padding: 11px 16px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55), inset 0 0 0 2px rgba(255, 255, 255, 0.8);
+    position: relative;
+  }
+
+  .dlg-speaker {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(90deg, #8f1d21, #b91c1c);
+    color: #fff;
+    border: 1.5px solid #fde047;
+    padding: 3px 13px;
+    border-radius: 999px;
+    font-weight: 900;
+    font-size: calc(0.84rem * var(--font-scale));
+    margin-bottom: 6px;
+  }
+  .dlg-speaker.hero { background: linear-gradient(90deg, #14532d, #15803d); }
+  .dlg-speaker.mentor { background: linear-gradient(90deg, #1e3a8a, #2563eb); }
+
+  .dlg-text {
+    font-size: calc(1.06rem * var(--font-scale));
+    font-weight: 800;
+    line-height: 1.56;
+    color: #24180b;
+  }
+
+  /* 商業收藏級 3D 雷射光澤法規必殺技卡牌 */
+  .spell-hand {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    perspective: 900px;
+  }
+
+  .foil-card {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(160deg, #fffdf5 0%, #f3e4c3 100%);
+    color: #23180b;
+    border: 3px solid var(--gold);
+    border-radius: 16px;
+    padding: 12px 14px 11px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 8px;
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.55), inset 0 0 0 2px rgba(255, 255, 255, 0.8);
+    transform-style: preserve-3d;
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+
+  .foil-card::after {
+    content: "";
+    position: absolute;
+    inset: -60%;
+    background: linear-gradient(115deg, transparent 36%, rgba(255, 255, 255, 0.65) 50%, rgba(247, 217, 126, 0.35) 56%, transparent 68%);
+    transform: translateX(-85%) rotate(12deg);
+    transition: transform 0.55s ease;
+    pointer-events: none;
+  }
+
+  .foil-card:hover:not(:disabled) {
+    transform: translateY(-9px) scale(1.025);
+    border-color: #fff6c9;
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.65), 0 0 24px rgba(247, 217, 126, 0.65);
+  }
+  .foil-card:hover:not(:disabled)::after {
+    transform: translateX(85%) rotate(12deg);
+  }
+
+  .foil-card.tier-emerald { border-color: #16a34a; }
+  .foil-card.tier-amethyst { border-color: #9333ea; }
+  .foil-card.card-win {
+    background: linear-gradient(160deg, #dcfce7, #bbf7d0);
+    border-color: #15803d;
+  }
+  .foil-card.card-fail {
+    background: linear-gradient(160deg, #fee2e2, #fecaca);
+    border-color: #b91c1c;
+    opacity: 0.62;
+  }
+
+  .fc-name {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: calc(1.02rem * var(--font-scale));
+    color: #14532d;
+  }
+
+  .fc-law-pill {
+    display: inline-block;
+    background: #142038;
+    color: var(--gold-bright);
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: calc(0.76rem * var(--font-scale));
+    font-weight: 800;
+    margin-top: 4px;
+  }
+  .fc-law-pill.revealed-ok { background: #14532d; color: #dcfce7; }
+  .fc-law-pill.revealed-fail { background: #991b1b; color: #fee2e2; }
+
+  .fc-desc {
+    font-size: calc(0.88rem * var(--font-scale));
+    color: #3a2b1a;
+    font-weight: 700;
+    line-height: 1.44;
+  }
+
+  .battle-bottom-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* =========================================================
+     4. 「異議あり！」必殺技特寫 Cut-in 演出層
+  ========================================================= */
+  #cutinOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    pointer-events: none;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10, 16, 28, 0.45);
+  }
+  #cutinOverlay.active { display: flex; }
+
+  .cutin-band {
+    width: 112%;
+    height: 210px;
+    transform: rotate(-4deg);
+    background: linear-gradient(90deg, #0b3620 0%, #166534 30%, #ca8a04 68%, #fef08a 100%);
+    border-top: 5px solid #fffbe0;
+    border-bottom: 5px solid #fffbe0;
+    box-shadow: 0 0 60px rgba(247, 217, 126, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 26px;
+    overflow: hidden;
+    position: relative;
+    animation: cutinSlide 0.95s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes cutinSlide {
+    0% { opacity: 0; transform: rotate(-4deg) translateX(-45%) scaleY(0.4); }
+    18% { opacity: 1; transform: rotate(-4deg) translateX(0) scaleY(1); }
+    82% { opacity: 1; transform: rotate(-4deg) translateX(0) scaleY(1); }
+    100% { opacity: 0; transform: rotate(-4deg) translateX(25%) scaleY(0.85); }
+  }
+
+  .cutin-portrait {
+    height: 245px;
+    width: 190px;
+    object-fit: cover;
+    object-position: center 12%;
+    border: 4px solid #fffbe0;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.65);
+    flex-shrink: 0;
+  }
+
+  .cutin-text-group {
+    color: #fff;
+    text-shadow: 0 4px 0 #1f1406, 0 8px 22px rgba(0, 0, 0, 0.75);
+  }
+  .cutin-kicker {
+    font-family: var(--serif);
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: #fef08a;
+    letter-spacing: 5px;
+  }
+  .cutin-title {
+    font-family: var(--serif);
+    font-size: clamp(1.5rem, 3.6vw, 2.7rem);
+    font-weight: 900;
+    line-height: 1.15;
+  }
+
+  /* =========================================================
+     5. 典藏彈出視窗（聖物館、移交清冊、法典與榮譽證書）
+  ========================================================= */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 95;
+    background: rgba(8, 13, 24, 0.78);
+    backdrop-filter: blur(5px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal-backdrop.open { display: flex; }
+
+  .storybook-modal {
+    background: linear-gradient(180deg, #fffdf7 0%, #f5e9ce 100%);
+    color: var(--ink);
+    border: 3.5px solid var(--gold);
+    border-radius: 20px;
+    max-width: 900px;
+    width: 100%;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 28px 65px rgba(0, 0, 0, 0.7);
+  }
+
+  .sm-head {
+    background: linear-gradient(135deg, #14532d 0%, #1e3a5f 100%);
+    color: #fef3c7;
+    padding: 14px 20px;
+    border-bottom: 2.5px solid var(--gold);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 1.12rem;
+  }
+
+  .sm-body {
+    padding: 18px 20px;
+    overflow-y: auto;
+  }
+
+  .relic-showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .relic-studio-card {
+    background: radial-gradient(circle at 50% 35%, #24344d 0%, #101827 100%);
+    color: #fef3c7;
+    border: 2px solid var(--gold);
+    border-radius: 14px;
+    padding: 12px;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  }
+  .relic-studio-card img {
+    width: 118px;
+    height: 118px;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.6));
+  }
+
+  .ledger-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 10px;
+    margin: 10px 0 16px;
+  }
+
+  .ledger-item {
+    background: #fff;
+    border: 2px solid #d6c5a3;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: calc(0.86rem * var(--font-scale));
+  }
+  .ledger-item.got {
+    background: #ecfdf5;
+    border-color: #16a34a;
+  }
+
+  .cert-frame {
+    background: linear-gradient(180deg, #fffdf5, #f6e7c1);
+    border: 8px double #a6721f;
+    border-radius: 16px;
+    padding: 26px 22px;
+    text-align: center;
+    position: relative;
+  }
+
+  @media (max-width: 860px) {
+    .spell-hand, .relic-showcase-grid { grid-template-columns: 1fr; }
+    .battle-bars-top { grid-template-columns: 1fr; gap: 8px; }
+    .portraits-stage { grid-template-columns: 1fr 1fr; min-height: 175px; }
+    .portrait-frame { width: clamp(136px, 40vw, 185px); height: clamp(160px, 46vw, 215px); }
+    .vs-medallion { display: none; }
+    .map-toast { max-width: 90%; font-size: 0.78rem; }
+    .cutin-band { height: 155px; gap: 12px; }
+    .cutin-portrait { height: 165px; width: 130px; }
+  }
+
+  @media print {
+    #titleScreen, #mapScreen, #battleScreen, .no-print { display: none !important; }
+    .modal-backdrop { position: static; display: block !important; background: #fff; }
+    .storybook-modal { border: none; box-shadow: none; max-height: none; }
+    .sm-head { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- =========================================================
+     1. 電影感全螢幕標題畫面 (Title Screen)
+========================================================= -->
+<section id="titleScreen">
+  <div class="title-bg"></div>
+  <div class="title-vignette"></div>
+  <canvas id="ambientCanvas"></canvas>
+
+  <div class="title-crest-wrap">
+    <div class="title-edition-ribbon">✨ 115.10.03 最新法規彙編典藏版 ✨</div>
+    <h1 class="game-logo">儲互社選務勇者傳</h1>
+    <div class="game-subtitle">— 奪回大圖記・奇幻繪本冒險物語 —</div>
+  </div>
+
+  <div class="title-menu">
+    <button class="btn-storybook-primary" onclick="enterWorldMap(false)">▶ 展開選務冒險旅程</button>
+    <div class="title-sub-row">
+      <button class="btn-storybook-glass" id="btnContinueTitle" onclick="enterWorldMap(true)">📖 繼續上次進度</button>
+      <button class="btn-storybook-glass" onclick="toggleMusic(); this.textContent = musicOn ? '🎵 繪本交響樂：開' : '🎵 繪本交響樂：關';">🎵 開啟繪本配樂</button>
+    </div>
+  </div>
+
+  <div class="title-credit">
+    中華民國儲蓄互助社 選舉罷免與幹部移交實戰互動遊戲 ｜ 依 115.10.03 最新版法規彙編製作
+  </div>
+</section>
+
+<!-- =========================================================
+     2. 手繪全景互動大世界地圖 (Overworld Map)
+========================================================= -->
+<section id="mapScreen" class="hidden">
+  <header class="studio-hud">
+    <div class="studio-hud-inner">
+      <div class="hero-hud-card">
+        <img class="hero-avatar-mini" src="./assets_art/char_hero.webp" alt="選務勇者" />
+        <div>
+          <div class="hud-lv-line" id="hudLvTitle">⚔️ Lv.1 見習選務特派員</div>
+          <div class="hud-bars-row">
+            <div class="bar-mini-wrap">
+              <span>❤️</span>
+              <div class="bar-mini-track"><div class="bar-mini-fill" id="hudHpFill" style="width:100%;background:linear-gradient(90deg,#16a34a,#4ade80);"></div></div>
+              <span id="hudHpNum">100/100</span>
+            </div>
+            <span class="hud-relic-pill"><img src="./assets_art/relic_seal_3d.webp" alt="" /><span id="hudRelicCnt">聖物 0/6</span></span>
+            <span class="hud-relic-pill"><img src="./assets_art/relic_chest_3d.webp" alt="" /><span id="hudChestCnt">清冊 0/6</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-btn-group">
+        <button class="hud-btn gold" onclick="openInventoryModal()">🎒 聖物館與法典</button>
+        <button class="hud-btn" id="btnVoice" onclick="toggleVoice()">🗣️ 語音：開</button>
+        <button class="hud-btn" id="btnMusic" onclick="toggleMusic()">🎵 配樂：關</button>
+        <button class="hud-btn" onclick="toggleLargeFont()">🔍 大字</button>
+        <button class="hud-btn" onclick="backToTitle()">🏠 封面</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="overworld-shell">
+    <div class="quest-scroll-bar">
+      <div class="quest-scroll-text" id="questHintBar">🧭 任務指南：點擊地圖上發光的據點頭像或 3D 寶箱，展開 115 年最新選罷法冒險！</div>
+      <button class="hud-btn gold" style="padding:7px 14px;" onclick="goNextQuest()">⚡ 前往下一個主線據點 ▶</button>
+    </div>
+
+    <div class="map-viewport" id="mapViewport">
+      <img class="map-bg-img" src="./assets_art/world_map.webp" alt="儲蓄互助社奇幻小鎮全景手繪地圖" />
+      <div class="map-sunlight-layer"></div>
+      <div class="map-toast" id="mapToast">歡迎來到儲互社奇幻小鎮！</div>
+
+      <!-- 動態金色虛線旅途路線（精準沿著手繪石板小路連結 6 大地標） -->
+      <svg class="map-paths-svg" viewBox="0 0 1000 562.5" preserveAspectRatio="none">
+        <path class="quest-path-line" d="M 300 395 Q 360 325 280 220 Q 410 275 520 304 Q 640 320 730 242 Q 705 395 860 416 Q 630 340 480 190 Q 545 150 580 96" />
+      </svg>
+
+      <!-- 主角地圖棋子（平滑移動，停駐據點旁不遮擋角色頭像） -->
+      <div class="map-hero-token" id="mapHeroToken" style="left: 21.5%; top: 75.5%;">
+        <img src="./assets_art/char_hero.webp" alt="勇者位置" />
+        <span class="map-hero-badge">⚔️ 勇者</span>
+      </div>
+
+      <!-- 動態生成的 6 大據點節點與 6 座移交清冊寶箱掛載層 -->
+      <div id="mapMarkersLayer"></div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     3. 商業級劇院戰鬥舞台 (Battle Screen)
+========================================================= -->
+<section id="battleScreen">
+  <div class="battle-bg" id="battleBgImg"></div>
+  <div class="battle-bg-shade"></div>
+  <canvas id="vfxCanvas"></canvas>
+
+  <div class="battle-inner" id="battleInner">
+    <div class="battle-bars-top">
+      <div class="combatant-bar-box">
+        <div class="cb-header">
+          <span id="bHeroLabel">⚔️ Lv.1 選務勇者</span>
+          <span id="bHeroHpLabel">100 / 100</span>
+        </div>
+        <div class="dual-hp-track">
+          <div class="dual-hp-ghost" id="bHeroGhost" style="width:100%"></div>
+          <div class="dual-hp-main" id="bHeroMain" style="width:100%"></div>
+        </div>
+      </div>
+
+      <div class="round-emblem">
+        <div style="font-size:0.74rem;letter-spacing:2px;">對決回合</div>
+        <div style="font-size:1.05rem;" id="bRoundText">1 / 3</div>
+      </div>
+
+      <div class="combatant-bar-box boss">
+        <div class="cb-header">
+          <span id="bBossHpLabel">300 / 300</span>
+          <span id="bBossLabel">👹 據點守衛</span>
+        </div>
+        <div class="dual-hp-track">
+          <div class="dual-hp-ghost" id="bBossGhost" style="width:100%"></div>
+          <div class="dual-hp-main" id="bBossMain" style="width:100%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="portraits-stage">
+      <div class="portrait-frame" id="heroPortraitBox">
+        <div class="portrait-inner">
+          <img src="./assets_art/char_hero.webp" alt="選務勇者" />
+          <div class="portrait-nameplate">⚔️ 選務特派員勇者</div>
+        </div>
+      </div>
+
+      <div class="vs-medallion">
+        <div class="vs-medallion-orb">
+          <img id="battleRelicPreview" src="./assets_art/relic_seal_3d.webp" alt="爭奪聖物" />
+        </div>
+        <div class="vs-relic-tag">🎁 爭奪 3D 聖物</div>
+      </div>
+
+      <div class="portrait-frame" id="bossPortraitBox">
+        <div class="portrait-inner">
+          <img id="bossPortraitImg" src="./assets_art/boss_counter.webp" alt="對決角色" />
+          <div class="portrait-nameplate" id="bossPortraitName">對決守衛</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="storybook-dialogue">
+      <div class="dlg-speaker" id="dlgSpeaker">👹 守衛發動違規挑戰！</div>
+      <div class="dlg-text" id="dlgText">...</div>
+    </div>
+
+    <div class="spell-hand" id="spellHand"></div>
+
+    <div class="battle-bottom-bar">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="hud-btn gold" id="btnBattlePotion" onclick="usePotion()">💊 督導錦囊回血（剩 3 次）</button>
+        <button class="hud-btn" onclick="exitBattleToMap()">🗺️ 暫回大地圖</button>
+      </div>
+      <div id="battleProceedSlot"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 必殺技特寫 Cut-in 演出 -->
+<div id="cutinOverlay">
+  <div class="cutin-band">
+    <img class="cutin-portrait" src="./assets_art/char_hero.webp" alt="勇者特寫" />
+    <div class="cutin-text-group">
+      <div class="cutin-kicker">✨ 異議あり！法規奧義發動 ✨</div>
+      <div class="cutin-title" id="cutinSpellTitle">選罷法第 5 條・親領聖盾斬！</div>
+    </div>
+  </div>
+</div>
+
+<!-- 🎒 聖物館、移交清冊與 115.10.03 法典 Modal -->
+<div class="modal-backdrop" id="invModal">
+  <div class="storybook-modal">
+    <div class="sm-head">
+      <span>🎒 儲互社選務聖物館 ＆ 115.10.03 精華法典</span>
+      <button class="hud-btn" onclick="closeModal('invModal')">✕ 關閉</button>
+    </div>
+    <div class="sm-body" id="invModalBody"></div>
+  </div>
+</div>
+
+<!-- 🏆 破關燙金榮譽證書 Modal -->
+<div class="modal-backdrop" id="victoryModal">
+  <div class="storybook-modal">
+    <div class="sm-head" style="background:linear-gradient(135deg,#9a6516,#14532d);">
+      <span>👑 奪回社大圖記！傳奇選務督導勇者・榮譽授證大典</span>
+      <button class="hud-btn no-print" onclick="closeModal('victoryModal')">✕ 關閉</button>
+    </div>
+    <div class="sm-body">
+      <div class="no-print" style="text-align:center;margin-bottom:12px;">
+        <input id="certCuIn" type="text" value="中華民國儲蓄互助社" style="padding:8px 12px;border:2px solid #c8963e;border-radius:10px;font-weight:800;margin:4px;" />
+        <input id="certNameIn" type="text" value="選務勇者" style="padding:8px 12px;border:2px solid #c8963e;border-radius:10px;font-weight:800;margin:4px;" />
+        <button class="hud-btn gold" style="padding:9px 14px;" onclick="refreshCert()">✨ 更新證書</button>
+      </div>
+      <div class="cert-frame">
+        <img src="./assets_art/relic_seal_3d.webp" alt="金玉社大圖記" style="width:92px;height:92px;object-fit:contain;margin-bottom:6px;filter:drop-shadow(0 6px 10px rgba(0,0,0,0.28));" />
+        <div style="font-size:0.88rem;font-weight:900;color:#8f1d21;letter-spacing:3px;">115.10.03 最新版選罷法暨幹部移交 RPG 實戰認證</div>
+        <h2 style="margin:6px 0 10px;font-family:var(--serif);color:#14532d;font-size:1.85rem;">🏅 傳奇選務督導勇者・榮譽合格證書</h2>
+        <p style="font-size:1.08rem;font-weight:700;line-height:1.7;">
+          茲表揚 <strong id="certCuOut" style="color:#9a6516;border-bottom:2px solid #9a6516;">中華民國儲蓄互助社</strong>
+          <strong id="certNameOut" style="color:#14532d;border-bottom:2px solid #14532d;margin-left:6px;">選務勇者</strong><br/>
+          成功巡歷儲互社奇幻小鎮六大據點、收集【六大移交清冊】與【六大法規聖物】，<br/>
+          以 115 年最新選罷法擊破抗不移交前任理事長、圓滿奪回社大圖記！
+        </p>
+        <div id="certStatsLine" style="font-weight:900;color:#8f1d21;margin-top:8px;"></div>
+      </div>
+      <div class="no-print" style="display:flex;justify-content:center;gap:10px;margin-top:16px;flex-wrap:wrap;">
+        <button class="btn-storybook-primary" style="width:auto;padding:12px 24px;font-size:1rem;" onclick="window.print()">🖨️ 列印／儲存 PDF 證書</button>
+        <button class="hud-btn" style="background:#142038;padding:12px 18px;font-size:0.95rem;" onclick="resetAllProgress()">🔄 重新開始冒險</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   繪本交響配樂引擎（吉卜力豎琴木管風）＋ 物理音效 ＋ 中文語音
+========================================================= */
+let audioCtx = null;
+let musicOn = false;
+let musicTrack = 'town'; // 'town' | 'battle'
+let musicTimer = null;
+let musicStep = 0;
+let voiceOn = true;
+
+function getAC() {
+  if (!audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) audioCtx = new AC();
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function speakText(txt, isEnemy = false) {
+  if (!voiceOn || typeof window === 'undefined' || !window.speechSynthesis) return;
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(txt.replace(/[✨⚡🔮🛡️🔥👑👹✅❌📌⚖️📘🧭🔏📦]/g, ''));
+    u.lang = 'zh-TW';
+    u.rate = isEnemy ? 1.06 : 1.04;
+    u.pitch = isEnemy ? 0.88 : 1.12;
+    window.speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+function playSfx(kind) {
+  const ctx = getAC();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const playNote = (type, f1, f2, t0, dur, vol) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.frequency.setValueAtTime(f1, t0);
+    if (f2 !== f1) o.frequency.exponentialRampToValueAtTime(f2, t0 + dur);
+    g.gain.setValueAtTime(vol, t0);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(t0); o.stop(t0 + dur + 0.02);
+  };
+
+  if (kind === 'harp') {
+    [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => playNote('sine', f, f, now + i * 0.06, 0.42, 0.12));
+  } else if (kind === 'cutin') {
+    playNote('sawtooth', 880, 180, now, 0.18, 0.16);
+    playNote('triangle', 170, 44, now + 0.08, 0.20, 0.30);
+    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => playNote('triangle', f, f, now + 0.12 + i * 0.045, 0.30, 0.14));
+  } else if (kind === 'hurt') {
+    playNote('sawtooth', 180, 72, now, 0.24, 0.15);
+  } else if (kind === 'fanfare') {
+    [523.25, 659.25, 783.99, 1046.5, 1318.5, 1567.98].forEach((f, i) => playNote('triangle', f, f, now + i * 0.085, 0.48, 0.15));
+  } else if (kind === 'click') {
+    playNote('sine', 740, 880, now, 0.06, 0.06);
+  }
+}
+
+function stopMusic() {
+  if (musicTimer) { clearInterval(musicTimer); musicTimer = null; }
+}
+
+function stepMusic() {
+  if (!musicOn) return;
+  const ctx = getAC();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  if (musicTrack === 'town') {
+    // 吉卜力／久石讓風格 3/4 圓舞曲豎琴分解和弦 (Fmaj7 -> Em7 -> Dm7 -> Cmaj7)
+    const arp = [
+      349.23, 440.00, 523.25, 659.25, 523.25, 440.00,
+      329.63, 392.00, 493.88, 587.33, 493.88, 392.00,
+      293.66, 349.23, 440.00, 523.25, 440.00, 349.23,
+      261.63, 329.63, 392.00, 493.88, 523.25, 392.00
+    ];
+    const f = arp[musicStep % arp.length];
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(f, now);
+    g.gain.setValueAtTime(0.001, now);
+    g.gain.linearRampToValueAtTime(0.036, now + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.0008, now + 0.72);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(now); o.stop(now + 0.75);
+  } else if (musicTrack === 'battle') {
+    // 緊張華麗繪本交響對決弦樂律動
+    const seq = [329.63, 392.00, 440.00, 493.88, 440.00, 392.00, 329.63, 293.66];
+    const f = seq[musicStep % seq.length];
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(f, now);
+    g.gain.setValueAtTime(0.042, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(now); o.stop(now + 0.24);
+  }
+  musicStep++;
+}
+
+function setTrack(t) {
+  musicTrack = t;
+  if (!musicOn) return;
+  stopMusic();
+  stepMusic();
+  musicTimer = setInterval(stepMusic, t === 'battle' ? 215 : 370);
+}
+
+function toggleMusic() {
+  musicOn = !musicOn;
+  const b = document.getElementById('btnMusic');
+  if (b) b.textContent = musicOn ? '🎵 配樂：開' : '🎵 配樂：關';
+  if (musicOn) setTrack(battle.active ? 'battle' : 'town');
+  else stopMusic();
+}
+
+function toggleVoice() {
+  voiceOn = !voiceOn;
+  document.getElementById('btnVoice').textContent = voiceOn ? '🗣️ 語音：開' : '🔇 語音：關';
+  if (!voiceOn && window.speechSynthesis) window.speechSynthesis.cancel();
+}
+
+function toggleLargeFont() { document.body.classList.toggle('large-text'); }
+
+/* =========================================================
+   遊戲世界資料：6 大據點（座標對應 world_map.png 建築位置）＋ 6 座移交清冊寶箱
+========================================================= */
+const LEDGER_CHESTS = [
+  { id: "c1", x: 18.0, y: 63.0, opened: false, title: "第一冊：印信移交清冊", desc: "社大圖記印模、理事長官章、銀行開戶三印鑑（社印/理事長/司庫或經理）。" },
+  { id: "c2", x: 39.0, y: 40.0, opened: false, title: "第二冊：未完成案件清冊", desc: "逾期放款催收案袋、呆帳備查簿、應收侵占卷、在建工程合約（逐袋清點借據本票）。" },
+  { id: "c3", x: 44.0, y: 75.0, opened: false, title: "第三冊：檔案移交清冊", desc: "立案證書、會員證書、歷屆社員大會紀錄（永久保存）、理監事議事錄與主管機關函。" },
+  { id: "c4", x: 67.0, y: 67.0, opened: false, title: "第四冊：財務移交清冊", desc: "交接前一日營業日結餘表、存摺定存單、傳票帳冊與網路簿記電子備份。" },
+  { id: "c5", x: 81.0, y: 56.0, opened: false, title: "第五冊：人事移交清冊", desc: "專職同仁勞健保投保紀錄、考績評定與人事密件專案點交。" },
+  { id: "c6", x: 46.0, y: 30.0, opened: false, title: "第六冊：財產移交清冊", desc: "社產不動產權狀、電腦設備與系統管理密碼權限；各冊末行加註「以下空白」！" }
+];
+
+const NODES = [
+  {
+    id: "n_counter",
+    name: "櫃台精靈・小美",
+    zone: "服務櫃台小屋",
+    x: 30.0, y: 70.0,
+    img: "./assets_art/boss_counter.webp",
+    bg: "./assets_art/bg_hall.webp",
+    relicImg: "./assets_art/relic_chest_3d.webp",
+    relic: "📘 115最新修法魔導書",
+    rounds: [
+      {
+        enemyAttack: "社員阿明積欠「社員年費與自付互助費」，有人說欠費不是借款不能動股金！115.02.25 最新章程第 17 條怎麼規定？",
+        correctCard: { name: "🔥 章程17條・欠費股金抵充斬", law: "115.02.25 章程範例 §17", desc: "「欠費」、借款或擔保債務未償，經理事會討論通過得以股金抵充，並應書面通知社員！" },
+        wrongCards: [
+          { name: "🚫 欠費免還放生術", law: "舊版誤解", desc: "欠費不能用股金抵充，只能放棄追討或私下扣款不通知。" },
+          { name: "📜 呈報內政部特批令", law: "過度程序", desc: "每筆百元年費都須先報內政部核准才能抵充股金。" }
+        ],
+        heroShout: "115年2月最新修訂章程第17條，欠費經理事會通過就能以股金抵充，並書面通知社員！",
+        bossDefeat: "太強了！連今年剛生效的欠費抵充條文都一字不漏！"
+      },
+      {
+        enemyAttack: "未滿14歲小朋友與持居留證的外籍配偶想申請入社，且某位理事想擔任「法人社員」借款保證人！通通違規嗎？",
+        correctCard: { name: "✨ 114新制・入社與法人作保印", law: "章程 §8 (114.12) / §31 (113.12)", desc: "未滿14歲憑戶口名簿或戶籍謄本、非本國籍憑居留證入社；理監事及職員已放寬得任「法人社員」連帶保證人！" },
+        wrongCards: [
+          { name: "⛔ 全面封鎖拒絕術", law: "過時舊章程", desc: "未滿14歲與外籍人士不能入社，理監事也禁止替法人社員作保。" },
+          { name: "🤝 全社無限作保術", law: "違法擴張", desc: "理監事可以幫所有無親屬關係的自然人社員當借款保證人。" }
+        ],
+        heroShout: "最新章程已明定未滿14歲憑戶口名簿、外籍憑居留證，並放寬理監事得擔任法人社員保證人！",
+        bossDefeat: "差點就把合法的新社員跟法人社員拒於門外了！"
+      },
+      {
+        enemyAttack: "我沒寄雙掛號、也沒提社員大會決議，直接把兩年沒往來的張大千轉「留置股金」剝奪他今天投票權！另外社每股淨值剩85元也要退100元現鈔嗎？",
+        correctCard: { name: "🛡️ 留置股金四步封印＋淨值退股盾", law: "章程 §11、§19、§20 / 監督辦法 §37-1", desc: "留置股金必經「理事會造冊➔雙掛號通知➔社員大會決議通過」缺一不可！每股低於100元依當時每股價值退股（電匯本人帳戶）！" },
+        wrongCards: [
+          { name: "💻 電腦一鍵逕轉術", law: "程序違法", desc: "專職在電腦按轉列留置股金就立刻生效，不須經過社員大會！" },
+          { name: "💵 虧損也退百元現鈔術", law: "違反 §37-1", desc: "不管淨值多少一律退每股100元現金，不用電匯本人帳戶。" }
+        ],
+        heroShout: "未經雙掛號與社員大會決議絕不得轉列留置股金！每股低於100元亦須以當時淨值辦理退股！",
+        bossDefeat: "完全折服！這本【115最新修法魔導書】請勇者收下！"
+      }
+    ]
+  },
+  {
+    id: "n_kinship",
+    name: "二親等皇親國戚",
+    zone: "石造資格審查閣",
+    x: 28.0, y: 39.0,
+    img: "./assets_art/boss_kinship.webp",
+    bg: "./assets_art/bg_hall.webp",
+    relicImg: "./assets_art/relic_seal_3d.webp",
+    relic: "🔮 二親等照妖鏡",
+    rounds: [
+      {
+        enemyAttack: "阿福伯投票當天剛好入社滿 2 年（投票前一日差 1 天），我們夫妻想一個選理事、一個選監事，都很合理吧？",
+        correctCard: { name: "🔮 投票前一日基準＋夫妻分任結界", law: "選罷辦法 §4、§6、§6-1 第1項", desc: "年齡(23~72)與入社2年算至「投票日前一日」（差1天剔除）；配偶及二親等血親不得同時擔任或「分任」理監事！" },
+        wrongCards: [
+          { name: "❤️ 夫妻分任無妨卡", law: "違反 §6-1", desc: "一個理事、一個監事不算同在理事會，完全沒問題！" },
+          { name: "📅 投票當日從寬計卡", law: "違反 §4", desc: "投票日當天就滿2年了，差一天從寬認定合格。" }
+        ],
+        heroShout: "算至投票日前一日未滿二年即淘汰！配偶更嚴禁同時或分任理監事，依法予以剔除！",
+        bossDefeat: "哼！居然連差一天跟夫妻一理一監都被你看穿！"
+      },
+      {
+        enemyAttack: "我親弟弟在本社當「專職會計」，我自己來選理事！那旁邊那位「表哥是理事、半年前借款逾期2個月」的吳小姐也該剔除吧？",
+        correctCard: { name: "⚖️ 職員二親等禁令＋四親等平反斬", law: "選罷辦法 §6(1)(2)、§6-1 第2項", desc: "職員、職員配偶及二親等血親（親兄弟）禁任理監事！但「表哥」是四親等且逾期2個月未超3個月，吳小姐完全合格！" },
+        wrongCards: [
+          { name: "⚔️ 全體親戚一概封殺", law: "過度剔除", desc: "表哥也是親戚、逾期一天就不行，兩位全部刷掉！" },
+          { name: "🤝 親兄弟各自上班放行", law: "違反 §6-1", desc: "弟弟當會計不影響哥哥當理事，准予登記！" }
+        ],
+        heroShout: "職員親兄弟屬二親等血親絕對禁止；但表哥屬四親等且逾期未超過三個月，吳小姐准予登記！",
+        bossDefeat: "好精準的法規刀法！沒誤殺也沒有放水！"
+      },
+      {
+        enemyAttack: "趙董在本社信用優良、過去易科罰金也已繳清，只是最近1年在「隔壁他社」借款逾期 4 個月！他社的帳你們管不著吧？",
+        correctCard: { name: "⚡ 跨社徵信・他社逾期淘汰雷", law: "選罷辦法 §6 第4、5項", desc: "於「他社」近1年借款逾期超過3個月者亦不得登記，任期內發生當然解任！（易科罰金已繳清者不受第6款限）" },
+        wrongCards: [
+          { name: "🙈 本社只查本社帳卡", law: "違反 §6 第4項", desc: "他社逾期與本社無關，趙董在本社股金高就讓他選！" },
+          { name: "⛓️ 繳過罰金終身禁選", law: "誤解 §6 第6款", desc: "只要這輩子受過易科罰金，就算繳清也終身不得參選。" }
+        ],
+        heroShout: "依第6條第4項，於他社近一年內借款逾期超過三個月亦不得登記，任期中發生更會當然解任！",
+        bossDefeat: "我們投降了！審查小組（理2監1）真是鐵面無私，收下【二親等照妖鏡】！"
+      }
+    ]
+  },
+  {
+    id: "n_proxy",
+    name: "委託書大嗓門王伯伯",
+    zone: "陽光社員大會廣場",
+    x: 52.0, y: 54.0,
+    img: "./assets_art/boss_proxy.webp",
+    bg: "./assets_art/bg_hall.webp",
+    relicImg: "./assets_art/relic_ballotbox_3d.webp",
+    relic: "🛡️ 親領選票聖盾",
+    rounds: [
+      {
+        enemyAttack: "全社 800 人只來 85 人＋20 張委託書（共105人），不到 1/5 該流會了吧？而且我帶了太太跟兒子共「2張」委託書，快發給我 3 張選票！",
+        correctCard: { name: "🛡️ 百人成會盾＋嚴禁委託投票斬", law: "章程 §36、選罷辦法 §5", desc: "達全體1/5「或」成年社員100人即合法成會！委託書僅計出席、每人限受1人委託，絕對禁止代領選票投票！" },
+        wrongCards: [
+          { name: "🎫 家人代領三張票卡", law: "違反 §5", desc: "都是一家人又有委託書，就發3張選票給王伯伯一起投！" },
+          { name: "📢 不足1/5強制流會卡", law: "誤解章程 §36", desc: "800人的1/5是160人，105人不足馬上宣布流會！" }
+        ],
+        heroShout: "105人已達成年社員100人門檻合法成會！且每人限受1人委託、絕對禁止委託投票，只能領自己1張票！",
+        bossDefeat: "喔喔！原來委託書只能算開會人數，不能代領太太的選票喔！"
+      },
+      {
+        enemyAttack: "應選 9 位理事！現場想改採「無記名限制連記法」，不用表決直接改，而且每張選票最多可以圈 5 個人對吧？",
+        correctCard: { name: "🗡️ 限制連記折半斬（1/3同意・限圈4人）", law: "選罷辦法 §2", desc: "改採限制連記法須經「出席 1/3 以上同意」，圈選上限不超應選名額 1/2：9÷2=4.5 無條件捨去，最多圈 4 人！" },
+        wrongCards: [
+          { name: "✋ 過半同意・最多圈5人", law: "算式錯誤", desc: "9的一半四捨五入是5人，且要過半數同意才行。" },
+          { name: "👑 主席宣布・照圈9人", law: "違反 §2", desc: "主席說改就改，限制連記法一樣可以圈滿9人。" }
+        ],
+        heroShout: "限制連記法須出席1/3以上同意，9除以2無條件捨去最多只能圈4人，圈5人整張立刻變廢票！",
+        bossDefeat: "好險有問清楚，差點多圈一個人害整張票作廢！"
+      },
+      {
+        enemyAttack: "發票前還有人在門口補簽到，且 3 號桌有社員故意「亮票」給大家看，監票員警告兩次仍不理會！該如何處置？",
+        correctCard: { name: "🚨 停止簽到封匭＋2/3同意驅離令", law: "選罷辦法 §14、§16、§18、§26", desc: "發票前主席必宣布「停止辦理簽到」並檢查封閉票匭；亮票不服警告，提經「出席人 2/3 以上同意」取消選舉權並載明紀錄！" },
+        wrongCards: [
+          { name: "🕊️ 邊簽到邊發票和平卡", law: "違反 §14、§18", desc: "以和為貴不用制止亮票，門口繼續簽到發票才熱鬧。" },
+          { name: "💰 現場開罰一千元卡", law: "無此規定", desc: "監票員沒收身分證並現場罰款一千元就好。" }
+        ],
+        heroShout: "發票前必須宣布停止簽到並封閉票匭！亮票經警告不服者，提經出席人2/3以上同意當場取消選舉權！",
+        bossDefeat: "哈哈，王伯伯我心服口服，乖乖領自己那 1 張票！送你【親領選票聖盾】！"
+      }
+    ]
+  },
+  {
+    id: "n_ballot",
+    name: "13款問題選票魔像",
+    zone: "木造開票唱票庭園",
+    x: 73.0, y: 43.0,
+    img: "./assets_art/boss_ballot.webp",
+    bg: "./assets_art/bg_hall.webp",
+    relicImg: "./assets_art/relic_ballotbox_3d.webp",
+    relic: "🔏 雙印鑑識神章",
+    rounds: [
+      {
+        enemyAttack: "第一張選票印得很漂亮、有蓋「社大圖記」，但漏蓋了「監事私章」；第二張則用「2B 鉛筆」圈寫還簽了投票人名字！",
+        correctCard: { name: "🔏 雙印缺一＆秘密投票全廢斬", law: "選罷辦法 §12、§20 第1、8、11款", desc: "選票須蓋「社印＋監事印」雙印生效（缺一全張無效）；人工用鉛筆圈寫或簽名蓋章亦屬全張無效！" },
+        wrongCards: [
+          { name: "✍️ 開票現場補蓋監事章", law: "違反 §12", desc: "請監事當場補蓋私章就好，鉛筆寫得清楚照算有效！" },
+          { name: "✂️ 剪掉簽名部分有效術", law: "誤解 §20", desc: "把簽名處剪掉，剩下的鉛筆圈選當作部分有效票。" }
+        ],
+        heroShout: "選票必須社印與監事印雙印齊全！漏蓋印章、用鉛筆圈寫及簽名蓋章，依法全部判為全張無效！",
+        bossDefeat: "咔啦咔啦——雙印防偽竟然完全騙不到你！"
+      },
+      {
+        enemyAttack: "應選 9 人一般連記，這張雙印票圈了 5 人，但其中「3號被原子筆塗改劃掉」（無簽名）。若主席與全體監票員表決這張票正反「同數」怎麼判？",
+        correctCard: { name: "🔍 部分無效認定＋同數有效聖光", law: "選罷辦法 §20 第1項6款、第2項", desc: "塗改屬第4~7款「部分無效」，僅3號無效，其餘4人仍有效！爭議由主席與全體監票員表決，正反同數時該票「應為有效」！" },
+        wrongCards: [
+          { name: "🔥 只要塗改一律整張作廢", law: "誤殺有效票", desc: "選票只要有一點塗改整張全部作廢；表決同數也算無效！" },
+          { name: "➕ 連塗改的3號照算5票", law: "計票錯誤", desc: "原本有圈過，塗改的3號照樣算1票共計5票。" }
+        ],
+        heroShout: "未超額時塗改僅該部分無效，其餘4票照算有效！主席與全體監票員表決同數時，依法認定為有效！",
+        bossDefeat: "魔像發出了讚嘆的金光！再接最後一題！"
+      },
+      {
+        enemyAttack: "社員在同姓名「陳大明」旁註記（住東勢），又對 4 號蓋了 2 個圈；最後第 9、10 名同票且第 9 名不在場！選票封存幾年？隔週寫信抗議受理嗎？",
+        correctCard: { name: "🎲 同名註記有效＋複圈一票＋主席代抽", law: "選罷辦法 §20(3)、§21、§24、§28~30", desc: "同姓名註明有效、同人複圈計1票；同票不在場由「主席代抽」；驗簽包封保管「3年」；異議須「當場提出＋3日書面」，30日報簡歷冊！" },
+        wrongCards: [
+          { name: "💥 寫字作廢・複圈算2票・不在場棄權", law: "全部違反", desc: "寫（住東勢）夾寫文字作廢；蓋兩圈算兩票；不在場算棄權！" },
+          { name: "🗑️ 隔天銷毀選票・一個月皆可抗議", law: "違反 §28、§29", desc: "開完票隔天就可銷毀，事後一個月內寫信去縣府都受理。" }
+        ],
+        heroShout: "同姓名註明區別有效、同人複圈以一票計、同票不在場主席代抽、封存3年、當場加3日書面異議、30日報簡歷冊！",
+        bossDefeat: "13款問題選票魔像化作祝福紙花！【雙印鑑識神章】歸您所有！"
+      }
+    ]
+  },
+  {
+    id: "n_tier",
+    name: "三級＆罷免大法師",
+    zone: "全國協會三層寶塔",
+    x: 86.0, y: 74.0,
+    img: "./assets_art/boss_tier.webp",
+    bg: "./assets_art/bg_hall.webp",
+    relicImg: "./assets_art/relic_seal_3d.webp",
+    relic: "🧭 三級選務羅盤",
+    rounds: [
+      {
+        enemyAttack: "陳理事長「2 年前」曾借款逾期 4 個月已清償，且所代表之社「欠繳協會常年會費」。他今年想同時選基層社理事、區會委員與全國協會理事，都過關嗎？",
+        correctCard: { name: "🧭 社看1年・區會總會看3年＋會費結界", law: "選罷 §6 vs 區會簡則 §5-1 / 協會選罷 §6", desc: "基層社僅審查最近1年（合格）；但區會與協會總會審查「最近3年」且社欠常年會費者不得推選或登記！" },
+        wrongCards: [
+          { name: "🌍 三級全體統一看1年", law: "混淆層級", desc: "三級都只查最近1年，社欠常年會費也不影響個人參選。" },
+          { name: "🚫 連基層社也禁選5年", law: "過度限制", desc: "曾經逾期五年內連基層社都禁止參選。" }
+        ],
+        heroShout: "社看一年、區會與全國協會看三年！且代表之社欠繳協會常年會費者，不得推選區會委員或登記協會候選人！",
+        bossDefeat: "好眼光！大多數幹部都會把 1 年跟 3 年搞混呢！"
+      },
+      {
+        enemyAttack: "全國協會代表大會可以「書面委託他社投票」嗎？另外理監事會可開視訊，那社員大會選舉也能改視訊投票嗎？廳舍重置原舊廳舍幾年內要處分？",
+        correctCard: { name: "🏛️ 協會委託1/3＋視訊紅線＋廳舍5年", law: "協會選罷 §13、章程 §43/49、監督 §24(115核備)", desc: "協會總會准許書面委託投票（限1人不超1/3）；理監事會可視訊但大會選舉禁視訊；廳舍不超總資產25%且原廳舍5年內處分！" },
+        wrongCards: [
+          { name: "📱 協會也禁委託・大會開放視訊", law: "剛好相反", desc: "協會總會禁止委託投票，但基層社社員大會可以線上視訊投票。" },
+          { name: "🏢 廳舍無上限・委託人數無上限", law: "違反 §13、§24", desc: "協會委託不限人數，買辦公廳舍也不限總資產比例。" }
+        ],
+        heroShout: "全國協會准許書面委託不超1/3！理監事會可視訊但大會選舉嚴禁視訊；重置廳舍後原舊廳舍應於5年內處分完成！",
+        bossDefeat: "連 115.01.13 內政部最新核備的監督辦法第24條都瞭若指掌！"
+      },
+      {
+        enemyAttack: "最後考驗罷免大陣！理事上任滿 4 個月能罷免嗎？若罷免會議「流會」怎麼算？若理事們要罷免「理事長」，應由誰提案與召集？",
+        correctCard: { name: "⚡ 罷免6月冷卻＋流會否決＋常監召集斬", law: "選罷辦法 §33、§34(2)、§37、§38", desc: "就任滿「6個月後」始得罷免；理監事1/3提案、2/3同意，「流會視為否決」；罷免理事長由理事1/2提案、常務監事召集、2/3同意！" },
+        wrongCards: [
+          { name: "🌀 上任即罷免・流會重開・理事長自己開", law: "違反 §33~38", desc: "隨時可罷免，流會要不斷重開直到通過，由被罷免的理事長自己召集。" },
+          { name: "🗳️ 過半數同意即罷免成功", law: "門檻錯誤", desc: "罷免只需出席過半數同意即通過，不須 2/3。" }
+        ],
+        heroShout: "就任滿6個月始得罷免，會議流會直接視為否決！罷免理事長由理事1/2提案、常務監事召開理事會2/3同意！",
+        bossDefeat: "三級結界解開！帶上【三級選務羅盤】，登上山頂金庫王座吧！"
+      }
+    ]
+  },
+  {
+    id: "n_vault",
+    name: "抗不移交前任理事長",
+    zone: "山頂金色金庫王座",
+    x: 58.0, y: 17.5,
+    img: "./assets_art/boss_vault.webp",
+    bg: "./assets_art/bg_vault.webp",
+    relicImg: "./assets_art/relic_seal_3d.webp",
+    relic: "👑 儲互社大圖記（終極勝利！）",
+    isFinal: true,
+    rounds: [
+      {
+        enemyAttack: "今天大會剛選完，9 位新理事有 1 人先搭高鐵走了，通知單也沒事先寫要當日開會，我就直接強行當天開第一次理事會互選我的人當理事長！",
+        correctCard: { name: "⏱️ 首次會議7~15日＋當日雙重鐵律斬", law: "選罷辦法 §22、§32、章程 §39/43", desc: "首次理監事會應於閉會「第7~15日內」召開；當日開會須通知單預先載明且全員到齊同意！任期自首次理事會起算3年，連2次無故缺席視同辭職！" },
+        wrongCards: [
+          { name: "🏃 8人過半直接當天開會卡", law: "違反 §22", desc: "9人到了8人已過半數，不用通知單寫也能馬上開會！" },
+          { name: "📆 任期從投票日算・連任無上限卡", law: "違反 §32、章程 §39", desc: "任期從投票日算，且理事長可無限期連任。" }
+        ],
+        heroShout: "違反選罷法第22條！未事前通知且缺席1人絕不得當日召開，應於閉會後第7至15日內合法召集！",
+        bossDefeat: "嘖！算你懂第 22 條！但移交清冊我偏要隨便弄！"
+      },
+      {
+        enemyAttack: "移交清冊我就印「2份」、叫「卸任常監」監交、不蓋騎縫章！而且新設社的「籌備主委和首屆理事長是同一個人」，根本不用移交吧？",
+        correctCard: { name: "📒 章程70條・一式四份騎縫章＋新常監監交", law: "章程 §70、籌備要點 §38", desc: "選出當場交圖記與清冊1份，15日內完竣；「新任常務監事」監交；一式四份＋跨頁騎縫章＋以下空白；交接日分界責任；籌備主委同一人仍須移交！" },
+        wrongCards: [
+          { name: "📄 印2份免騎縫・同一人免移交卡", law: "違反章程 §70、要點 §38", desc: "同一個人左手交右手免移交，清冊留2份就好不必報協會！" },
+          { name: "⏳ 圖記一個月後再寄出卡", law: "違反當場移交", desc: "社大圖記一個月後再寄，以投票日當作責任分界。" }
+        ],
+        heroShout: "依章程第70條與籌備要點第38條，當場交圖記、15日內新常監監交、一式四份蓋騎縫章，就算籌備主委同一人也必須移交！",
+        bossDefeat: "可惡！那我乾脆鎖死金庫大門「抗不移交」，你能拿我怎樣？！"
+      },
+      {
+        enemyAttack: "我就是不交出社大圖記和帳冊！而且就算給你，你一定先跑銀行換印鑑再跑縣府，變更登記順序都搞不清楚！",
+        correctCard: { name: "⚡ 終極奧義：社法32條一年徒刑60萬雷槌＋變更三部曲", law: "儲互社法 §32、§29 / 刑法 §336 / 監督 §9 / 章程 §42, §70", desc: "拒絕移交處1年以下徒刑或60萬罰金＋刑法業務侵占＋註銷原圖記！變更登記順序：「1個月內縣府 ➔ 國稅局 ➔ 銀行換三印鑑(社印/理事長/司庫或經理)」！" },
+        wrongCards: [
+          { name: "🙏 道德勸說無刑責・先跑銀行卡", law: "大錯特錯", desc: "抗不移交沒有刑事責任只能拜託；變更順序先跑銀行再去縣府。" },
+          { name: "🔧 帶鎖匠破門搶回大圖記卡", law: "違法私力救濟", desc: "半夜找鎖匠去前理事長家破門把大圖記搶回來！" }
+        ],
+        heroShout: "終極法規奧義發動！依《儲蓄互助社法》第32條處一年以下徒刑或60萬罰金、併提刑法業務侵占與註銷原圖記！變更登記依縣府、國稅局、銀行三印鑑辦理！",
+        bossDefeat: "天啊！！原來拒絕移交會吃上一年徒刑和 60 萬罰金？！我投降！大圖記與六大清冊馬上完整點交！！"
+      }
+    ]
+  }
+];
+
+/* =========================================================
+   玩家進度與自動存檔 (localStorage)
+========================================================= */
+const SAVE_KEY = 'cu_rpg_studio_v2_save';
+let player = {
+  lv: 1,
+  hp: 100,
+  maxHp: 100,
+  potions: 3,
+  heroX: 21.5,
+  heroY: 75.5,
+  clearedNodes: [],
+  openedChests: [],
+  relics: [],
+  hits: 0,
+  misses: 0,
+  wrongLog: [],
+  customBossesCleared: 0
+};
+
+const battle = {
+  active: false,
+  node: null,
+  roundIdx: 0,
+  bossHp: 300,
+  bossMaxHp: 300,
+  cards: [],
+  phase: 'choose'
+};
+
+function saveGame() {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(player)); } catch (e) {}
+}
+
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    Object.assign(player, parsed);
+    return true;
+  } catch (e) { return false; }
+}
+
+function resetAllProgress() {
+  try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+  player = { lv: 1, hp: 100, maxHp: 100, potions: 3, heroX: 21.5, heroY: 75.5, clearedNodes: [], openedChests: [], relics: [], hits: 0, misses: 0, wrongLog: [], customBossesCleared: 0 };
+  closeModal('victoryModal');
+  renderMapUI();
+  showMapToast("✨ 已重置冒險進度，展開全新選務旅程！");
+}
+
+/* =========================================================
+   標題畫面漂浮陽光塵埃粒子 Canvas
+========================================================= */
+function startTitleParticles() {
+  const c = document.getElementById('ambientCanvas');
+  if (!c || !c.getContext) return;
+  const ctx = c.getContext('2d');
+  const resize = () => { c.width = window.innerWidth || 1280; c.height = window.innerHeight || 720; };
+  resize();
+  window.addEventListener('resize', resize);
+
+  const motes = Array.from({ length: 44 }, () => ({
+    x: Math.random() * c.width,
+    y: Math.random() * c.height,
+    r: 1.5 + Math.random() * 3.2,
+    vx: 0.25 + Math.random() * 0.45,
+    vy: -0.15 - Math.random() * 0.35,
+    a: 0.25 + Math.random() * 0.65
+  }));
+
+  function tick() {
+    if (!document.getElementById('titleScreen').classList.contains('hidden')) {
+      ctx.clearRect(0, 0, c.width, c.height);
+      for (const m of motes) {
+        m.x += m.vx; m.y += m.vy;
+        if (m.x > c.width + 10) m.x = -10;
+        if (m.y < -10) m.y = c.height + 10;
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 238, 165, ${m.a})`;
+        ctx.fill();
+      }
+    }
+    if (window.requestAnimationFrame) window.requestAnimationFrame(tick);
+  }
+  tick();
+}
+
+/* =========================================================
+   標題 ⇄ 手繪大世界地圖切換與互動
+========================================================= */
+function enterWorldMap(useSave) {
+  playSfx('harp');
+  if (useSave) loadGame();
+  else {
+    player = { lv: 1, hp: 100, maxHp: 100, potions: 3, heroX: 21.5, heroY: 75.5, clearedNodes: [], openedChests: [], relics: [], hits: 0, misses: 0, wrongLog: [], customBossesCleared: 0 };
+    saveGame();
+  }
+  document.getElementById('titleScreen').classList.add('hidden');
+  document.getElementById('mapScreen').classList.remove('hidden');
+  renderMapUI();
+  showMapToast("🗺️ 點擊發光的角色據點或 3D 寶箱，展開奇幻選務冒險！");
+}
+
+function backToTitle() {
+  playSfx('click');
+  document.getElementById('mapScreen').classList.add('hidden');
+  document.getElementById('titleScreen').classList.remove('hidden');
+}
+
+function showMapToast(msg) {
+  const el = document.getElementById('mapToast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(showMapToast._t);
+  showMapToast._t = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+function renderMapUI() {
+  const titles = ["見習選務特派員", "櫃台修法達人", "審查照妖勇者", "禮堂護盾騎士", "開票神眼大師", "三級羅盤賢者", "傳奇選務督導長"];
+  document.getElementById('hudLvTitle').textContent = `⚔️ Lv.${player.lv} ${titles[Math.min(player.lv - 1, 6)]}`;
+  document.getElementById('hudHpNum').textContent = `${player.hp}/${player.maxHp}`;
+  document.getElementById('hudHpFill').style.width = `${Math.round((player.hp / player.maxHp) * 100)}%`;
+  document.getElementById('hudRelicCnt').textContent = `聖物 ${player.relics.length}/6`;
+  document.getElementById('hudChestCnt').textContent = `清冊 ${player.openedChests.length}/6`;
+
+  const heroTk = document.getElementById('mapHeroToken');
+  heroTk.style.left = `${player.heroX}%`;
+  heroTk.style.top = `${player.heroY}%`;
+
+  const nextNode = NODES.find(n => !player.clearedNodes.includes(n.id));
+  document.getElementById('questHintBar').textContent = nextNode
+    ? `🧭 主線目標：前往【${nextNode.zone}】挑戰「${nextNode.name}」，奪取【${nextNode.relic}】！`
+    : `👑 全據點制霸！社大圖記已榮耀歸位，點擊右側隨時領取傳奇勇者合格證書！`;
+
+  const layer = document.getElementById('mapMarkersLayer');
+  let html = '';
+
+  // 繪製 6 座移交清冊寶箱
+  LEDGER_CHESTS.forEach(ch => {
+    const isOpened = player.openedChests.includes(ch.id);
+    html += `
+      <button class="map-chest ${isOpened ? 'opened' : ''}" style="left:${ch.x}%;top:${ch.y}%;" title="${ch.title}" onclick="travelToChest('${ch.id}')">
+        <img src="./assets_art/relic_chest_3d.webp" alt="${ch.title}" />
+      </button>
+    `;
+  });
+
+  // 繪製 6 大據點頭像徽章
+  NODES.forEach(nd => {
+    const isCleared = player.clearedNodes.includes(nd.id);
+    const isNext = nextNode && nextNode.id === nd.id;
+    const tagTxt = isCleared ? '✅ 已過關' : (nd.isFinal ? '👑 最終決戰' : (isNext ? '❗ 下個目標' : '⚔️ 挑戰'));
+    html += `
+      <button class="map-node ${isCleared ? 'cleared' : ''} ${isNext ? 'active-quest' : ''} ${nd.isFinal ? 'final-boss' : ''}" style="left:${nd.x}%;top:${nd.y}%;" onclick="travelToNode('${nd.id}')">
+        <span class="node-status-tag">${tagTxt}</span>
+        <div class="node-ring"><img src="${nd.img}" alt="${nd.name}" /></div>
+        <div class="node-label">${nd.zone}</div>
+      </button>
+    `;
+  });
+
+  layer.innerHTML = html;
+}
+
+function travelToChest(chestId) {
+  const ch = LEDGER_CHESTS.find(c => c.id === chestId);
+  if (!ch) return;
+  player.heroX = ch.x; player.heroY = ch.y;
+  renderMapUI();
+  if (player.openedChests.includes(ch.id)) {
+    showMapToast(`📦 【${ch.title}】已收入背包：${ch.desc}`);
+    return;
+  }
+  playSfx('harp');
+  player.openedChests.push(ch.id);
+  player.hp = Math.min(player.maxHp, player.hp + 20);
+  saveGame();
+  renderMapUI();
+  showMapToast(`✨ 開啟 3D 寶箱！獲得【${ch.title}】（HP 恢復 +20）`);
+  speakText(`獲得${ch.title}`);
+}
+
+function travelToNode(nodeId) {
+  const nd = NODES.find(n => n.id === nodeId);
+  if (!nd) return;
+  player.heroX = Math.max(11, nd.x - 8.5);
+  player.heroY = Math.min(86, nd.y + 4.5);
+  renderMapUI();
+  showMapToast(`🏃 勇者正前往【${nd.zone}】會見「${nd.name}」...`);
+  setTimeout(() => startBattle(nd), 420);
+}
+
+function goNextQuest() {
+  const nextNode = NODES.find(n => !player.clearedNodes.includes(n.id));
+  if (nextNode) travelToNode(nextNode.id);
+  else openVictoryModal();
+}
+
+/* =========================================================
+   商業劇院戰鬥系統 ＋ 必殺技 Cut-in ＋ 爆炸粒子 VFX
+========================================================= */
+let vfxParticles = [];
+let vfxFloaters = [];
+let vfxRunning = false;
+
+function spawnVfxBurst(normX, normY, color, label) {
+  const c = document.getElementById('vfxCanvas');
+  if (!c || !c.getContext) return;
+  c.width = window.innerWidth || 1280;
+  c.height = window.innerHeight || 720;
+  const cx = c.width * normX, cy = c.height * normY;
+  for (let i = 0; i < 34; i++) {
+    const a = (Math.PI * 2 * i) / 34 + Math.random() * 0.25;
+    const s = 3 + Math.random() * 9;
+    vfxParticles.push({ x: cx, y: cy, vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: 3 + Math.random() * 5, life: 38, color });
+  }
+  vfxFloaters.push({ x: cx, y: cy - 20, txt: label, life: 56, color });
+  if (!vfxRunning) runVfxLoop();
+}
+
+function runVfxLoop() {
+  const c = document.getElementById('vfxCanvas');
+  if (!c || !c.getContext) return;
+  const ctx = c.getContext('2d');
+  vfxRunning = true;
+
+  function frame() {
+    ctx.clearRect(0, 0, c.width, c.height);
+    vfxParticles = vfxParticles.filter(p => p.life > 0);
+    for (const p of vfxParticles) {
+      p.x += p.vx; p.y += p.vy; p.vx *= 0.96; p.vy *= 0.96; p.life--;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r * (p.life / 38), 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.fill();
+    }
+    vfxFloaters = vfxFloaters.filter(f => f.life > 0);
+    for (const f of vfxFloaters) {
+      f.y -= 1.2; f.life--;
+      ctx.font = '900 34px "Noto Serif TC", "Microsoft JhengHei", serif';
+      ctx.textAlign = 'center';
+      ctx.strokeStyle = '#1b1106'; ctx.lineWidth = 6;
+      ctx.strokeText(f.txt, f.x, f.y);
+      ctx.fillStyle = f.color;
+      ctx.fillText(f.txt, f.x, f.y);
+    }
+    if (vfxParticles.length > 0 || vfxFloaters.length > 0) {
+      if (window.requestAnimationFrame) window.requestAnimationFrame(frame);
+    } else {
+      vfxRunning = false;
+    }
+  }
+  frame();
+}
+
+function triggerCutin(spellName) {
+  const ov = document.getElementById('cutinOverlay');
+  document.getElementById('cutinSpellTitle').textContent = spellName;
+  ov.classList.remove('active');
+  void ov.offsetWidth;
+  ov.classList.add('active');
+  clearTimeout(triggerCutin._t);
+  triggerCutin._t = setTimeout(() => ov.classList.remove('active'), 980);
+}
+
+function startBattle(node) {
+  battle.active = true;
+  battle.node = node;
+  battle.roundIdx = 0;
+  battle.bossMaxHp = node.rounds.length * 100;
+  battle.bossHp = battle.bossMaxHp;
+  battle.phase = 'choose';
+
+  document.getElementById('battleBgImg').style.backgroundImage = `url("${node.bg || './assets_art/bg_hall.webp'}")`;
+  document.getElementById('bossPortraitImg').src = node.img || './assets_art/boss_vault.webp';
+  document.getElementById('bossPortraitName').textContent = node.name;
+  document.getElementById('battleRelicPreview').src = node.relicImg || './assets_art/relic_seal_3d.webp';
+  document.getElementById('battleScreen').classList.add('open');
+
+  if (musicOn) setTrack('battle');
+  renderBattleRound();
+}
+
+function renderBattleRound() {
+  const nd = battle.node;
+  const rd = nd.rounds[battle.roundIdx];
+  battle.phase = 'choose';
+
+  document.getElementById('bHeroLabel').textContent = `⚔️ Lv.${player.lv} 選務勇者`;
+  document.getElementById('bBossLabel').textContent = `👹 ${nd.name}`;
+  document.getElementById('bRoundText').textContent = `${battle.roundIdx + 1} / ${nd.rounds.length}`;
+  updateBattleHpBars();
+
+  document.getElementById('heroPortraitBox').className = 'portrait-frame dimmed';
+  document.getElementById('bossPortraitBox').className = 'portrait-frame speaking';
+
+  document.getElementById('dlgSpeaker').className = 'dlg-speaker';
+  document.getElementById('dlgSpeaker').textContent = `👹 ${nd.name} 發動違規攻勢！`;
+  document.getElementById('dlgText').textContent = `「${rd.enemyAttack}」`;
+  speakText(rd.enemyAttack, true);
+
+  const deck = [
+    { ...rd.correctCard, ok: true },
+    ...rd.wrongCards.map(c => ({ ...c, ok: false }))
+  ];
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  battle.cards = deck;
+
+  const tiers = ['', 'tier-emerald', 'tier-amethyst'];
+  const slotLabels = ['選務對策牌・甲', '選務對策牌・乙', '選務對策牌・丙'];
+  document.getElementById('spellHand').innerHTML = deck.map((c, idx) => `
+    <button class="foil-card ${tiers[idx % 3]}" id="fcard_${idx}" onclick="castSpellCard(${idx})">
+      <div>
+        <div class="fc-name">${c.name}</div>
+        <span class="fc-law-pill" id="fpill_${idx}">🃏 ${slotLabels[idx % 3]}｜出牌後揭曉法源</span>
+      </div>
+      <div class="fc-desc">${c.desc}</div>
+    </button>
+  `).join('');
+
+  document.getElementById('battleProceedSlot').innerHTML = '';
+  document.getElementById('btnBattlePotion').textContent = `💊 督導錦囊回血（剩 ${player.potions} 次）`;
+}
+
+function updateBattleHpBars() {
+  const hpPct = Math.round((player.hp / player.maxHp) * 100);
+  const bPct = Math.round((battle.bossHp / battle.bossMaxHp) * 100);
+  document.getElementById('bHeroHpLabel').textContent = `${player.hp} / ${player.maxHp}`;
+  document.getElementById('bHeroMain').style.width = `${hpPct}%`;
+  document.getElementById('bHeroGhost').style.width = `${hpPct}%`;
+
+  document.getElementById('bBossHpLabel').textContent = `${battle.bossHp} / ${battle.bossMaxHp}`;
+  document.getElementById('bBossMain').style.width = `${bPct}%`;
+  document.getElementById('bBossGhost').style.width = `${bPct}%`;
+}
+
+function castSpellCard(idx) {
+  if (battle.phase !== 'choose') return;
+  const card = battle.cards[idx];
+  const rd = battle.node.rounds[battle.roundIdx];
+  const btn = document.getElementById(`fcard_${idx}`);
+  const inner = document.getElementById('battleInner');
+  const heroBox = document.getElementById('heroPortraitBox');
+  const bossBox = document.getElementById('bossPortraitBox');
+
+  if (card.ok) {
+    battle.phase = 'resolved';
+    player.hits++;
+    playSfx('cutin');
+    triggerCutin(card.name);
+
+    battle.bossHp = Math.max(0, battle.bossHp - 100);
+    heroBox.className = 'portrait-frame speaking lunge-right';
+    bossBox.className = 'portrait-frame hit-flash';
+    inner.classList.remove('hit-shake'); void inner.offsetWidth; inner.classList.add('hit-shake');
+    spawnVfxBurst(0.72, 0.36, '#fde047', '⚡ CRITICAL! -100');
+
+    setTimeout(() => {
+      heroBox.className = 'portrait-frame speaking';
+      bossBox.className = 'portrait-frame dimmed';
+    }, 450);
+
+    if (btn) btn.classList.add('card-win');
+    battle.cards.forEach((c, i) => {
+      const p = document.getElementById(`fpill_${i}`);
+      if (p) {
+        p.textContent = c.ok ? `✅ ${c.law}` : `❌ ${c.law}`;
+        p.className = `fc-law-pill ${c.ok ? 'revealed-ok' : 'revealed-fail'}`;
+      }
+    });
+    document.querySelectorAll('.foil-card').forEach(b => b.disabled = true);
+
+    document.getElementById('dlgSpeaker').className = 'dlg-speaker hero';
+    document.getElementById('dlgSpeaker').textContent = `⚔️ 勇者破防必殺技！【${card.law}】`;
+    document.getElementById('dlgText').innerHTML = `
+      <div style="color:#14532d;">「${rd.heroShout}」</div>
+      <div style="margin-top:6px;font-size:0.92rem;color:#8f1d21;background:rgba(143,29,33,0.08);padding:6px 10px;border-radius:8px;">
+        👹 ${battle.node.name}：${rd.bossDefeat}
+      </div>
+    `;
+    speakText(rd.heroShout, false);
+    updateBattleHpBars();
+
+    const isLast = (battle.roundIdx === battle.node.rounds.length - 1);
+    document.getElementById('battleProceedSlot').innerHTML = isLast
+      ? `<button class="btn-storybook-primary" style="width:auto;padding:10px 22px;font-size:1rem;" onclick="winBattle()">🏆 圓滿擊破！收下【${battle.node.relic}】▶</button>`
+      : `<button class="btn-storybook-primary" style="width:auto;padding:10px 22px;font-size:1rem;" onclick="nextRound()">⚔️ 乘勝追擊！進入第 ${battle.roundIdx + 2} 回合 ▶</button>`;
+  } else {
+    player.misses++;
+    playSfx('hurt');
+    player.hp = Math.max(10, player.hp - 20);
+    heroBox.className = 'portrait-frame hit-flash';
+    inner.classList.remove('hit-shake'); void inner.offsetWidth; inner.classList.add('hit-shake');
+    spawnVfxBurst(0.28, 0.36, '#ef4444', '💥 遭反擊 -20 HP');
+    setTimeout(() => { heroBox.className = 'portrait-frame dimmed'; }, 420);
+
+    if (btn) { btn.classList.add('card-fail'); btn.disabled = true; }
+    const fp = document.getElementById(`fpill_${idx}`);
+    if (fp) {
+      fp.textContent = `❌ ${card.law}`;
+      fp.className = 'fc-law-pill revealed-fail';
+    }
+    player.wrongLog.push({ boss: battle.node.name, law: rd.correctCard.law, desc: rd.correctCard.desc });
+
+    document.getElementById('dlgSpeaker').className = 'dlg-speaker mentor';
+    document.getElementById('dlgSpeaker').textContent = '🧑‍🏫 中區督導主任・溫馨救援錦囊';
+    document.getElementById('dlgText').innerHTML = `
+      <div>哎呀！這招被對方擋下來了，請改出對應 <strong>「${rd.correctCard.law}」</strong> 的正確法規卡牌！</div>
+      <div style="font-size:0.9rem;color:#574836;margin-top:4px;">💡 提示：${rd.correctCard.desc.slice(0, 44)}...</div>
+    `;
+    updateBattleHpBars();
+    saveGame();
+  }
+}
+
+function usePotion() {
+  if (player.potions <= 0) return;
+  player.potions--;
+  player.hp = player.maxHp;
+  playSfx('harp');
+  spawnVfxBurst(0.28, 0.36, '#4ade80', '💚 體力全滿！');
+  document.getElementById('btnBattlePotion').textContent = `💊 督導錦囊回血（剩 ${player.potions} 次）`;
+  updateBattleHpBars();
+  saveGame();
+}
+
+function nextRound() {
+  battle.roundIdx++;
+  renderBattleRound();
+}
+
+function winBattle() {
+  const nd = battle.node;
+  playSfx('fanfare');
+  if (!player.clearedNodes.includes(nd.id)) {
+    player.clearedNodes.push(nd.id);
+    player.lv = Math.min(7, player.lv + 1);
+    player.maxHp += 15;
+    player.hp = player.maxHp;
+    if (!player.relics.includes(nd.relic)) player.relics.push(nd.relic);
+  }
+  saveGame();
+  exitBattleToMap();
+  showMapToast(`🎉 凱旋而歸！擊破【${nd.name}】，升級 Lv.${player.lv} 並獲得【${nd.relic}】！`);
+  if (nd.isFinal) setTimeout(openVictoryModal, 450);
+}
+
+function exitBattleToMap() {
+  battle.active = false;
+  document.getElementById('battleScreen').classList.remove('open');
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  if (musicOn) setTrack('town');
+  renderMapUI();
+}
+
+/* =========================================================
+   選務聖物館、移交清冊法典與破關燙金證書
+========================================================= */
+function openInventoryModal() {
+  playSfx('click');
+  document.getElementById('invModalBody').innerHTML = `
+    <h3 style="margin:0 0 8px;font-family:var(--serif);color:#14532d;">🏛️ 儲蓄互助社三大核心選務聖物</h3>
+    <div class="relic-showcase-grid">
+      <div class="relic-studio-card">
+        <img src="./assets_art/relic_seal_3d.webp" alt="雙印組" />
+        <div style="font-weight:900;color:#fde047;">社大圖記＋監事私章</div>
+        <div style="font-size:0.8rem;color:#cbd5e1;margin-top:3px;">選罷辦法 §12：選票雙印缺一全張無效</div>
+      </div>
+      <div class="relic-studio-card">
+        <img src="./assets_art/relic_ballotbox_3d.webp" alt="法定投票匭" />
+        <div style="font-weight:900;color:#fde047;">法定查驗加封投票匭</div>
+        <div style="font-size:0.8rem;color:#cbd5e1;margin-top:3px;">選罷辦法 §16、§17：當眾封箱、親領親投</div>
+      </div>
+      <div class="relic-studio-card">
+        <img src="./assets_art/relic_chest_3d.webp" alt="移交清冊寶箱" />
+        <div style="font-weight:900;color:#fde047;">一式四份移交清冊寶箱</div>
+        <div style="font-size:0.8rem;color:#cbd5e1;margin-top:3px;">章程 §70：15日新常監監交、跨頁騎縫章</div>
+      </div>
+    </div>
+
+    <h3 style="margin:0 0 6px;font-family:var(--serif);color:#14532d;">📦 六大移交清冊收集進度（${player.openedChests.length}/6）</h3>
+    <div class="ledger-grid">
+      ${LEDGER_CHESTS.map(c => {
+        const got = player.openedChests.includes(c.id);
+        return `<div class="ledger-item ${got ? 'got' : ''}"><strong>${got ? '✅' : '🔒'} ${c.title}</strong><div style="color:#5c4d3c;margin-top:4px;">${got ? c.desc : '尚未開啟（點擊大地圖上的發光寶箱開啟！）'}</div></div>`;
+      }).join('')}
+    </div>
+
+    <div style="background:#fef3c7;border-left:5px solid #c8963e;padding:12px;border-radius:10px;font-size:0.9rem;">
+      <strong>📖 115.10.03 最新版選罷法精華總口訣：</strong>
+      年齡 23~72 歲、入社滿 2 年算至<strong>投票日前一日</strong>；配偶/二親等血親/專職親屬禁任；社看 1 年、區會總會看 <strong>3 年</strong>逾期且欠會費禁選；限制連記 1/3 同意上限 <strong>⌊N/2⌋</strong>；塗改部分無效、爭議同數有效；首次理監事會閉會 <strong>7~15 日</strong>；移交 <strong>15 日</strong>新常監監交一式四份騎縫章；抗不移交社法 32 條 <strong>1 年徒刑 / 60 萬罰金</strong>；115.02.25 章程 17 條新增<strong>欠費得以股金抵充</strong>！
+    </div>
+  `;
+  document.getElementById('invModal').classList.add('open');
+}
+
+function openVictoryModal() {
+  playSfx('fanfare');
+  const acc = Math.round((player.hits / Math.max(1, player.hits + player.misses)) * 100);
+  document.getElementById('certStatsLine').textContent = `勇者等級：Lv.${player.lv} ｜ 法規必殺命中率：${acc}% ｜ 六大移交清冊：${player.openedChests.length}/6`;
+  refreshCert();
+  document.getElementById('victoryModal').classList.add('open');
+}
+
+function refreshCert() {
+  document.getElementById('certCuOut').textContent = document.getElementById('certCuIn').value.trim() || '中華民國儲蓄互助社';
+  document.getElementById('certNameOut').textContent = document.getElementById('certNameIn').value.trim() || '選務勇者';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+/* 初始化（支援 #map / #battle=n_vault 研習會講師直達連結） */
+startTitleParticles();
+try {
+  if (!localStorage.getItem(SAVE_KEY)) {
+    document.getElementById('btnContinueTitle').style.opacity = '0.65';
+  }
+  const h = (window.location && window.location.hash) || '';
+  if (h === '#map') {
+    enterWorldMap(false);
+  } else if (h.startsWith('#battle=')) {
+    const nid = h.split('=')[1];
+    enterWorldMap(false);
+    const target = NODES.find(n => n.id === nid) || NODES[NODES.length - 1];
+    startBattle(target);
+  }
+} catch (e) {}
+
+/* 首屏載入後靜默預載大地圖與常用場景，切換零等待 */
+if (typeof window !== 'undefined' && typeof Image !== 'undefined') {
+  window.addEventListener('load', () => {
+    ['./assets_art/world_map.webp', './assets_art/bg_hall.webp', './assets_art/relic_seal_3d.webp', './assets_art/relic_chest_3d.webp'].forEach(src => {
+      const im = new Image();
+      im.src = src;
+    });
+  });
+}
+</script>
+</body>
+</html>
