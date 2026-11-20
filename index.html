@@ -13,7 +13,8 @@
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta name="twitter:card" content="summary_large_image" />
-<link rel="preload" as="image" href="./assets_art/title_keyart.webp" />
+<link rel="preload" as="image" href="./assets_art/title_keyart.webp" media="(min-width: 761px)" />
+<link rel="preload" as="image" href="./assets_art/title_keyart_mobile.webp" media="(max-width: 760px)" />
 <style>
   :root {
     --parchment: #fbf5e6;
@@ -1177,7 +1178,7 @@
     width: 100%;
     position: relative;
   }
-  .mobile-swipe-hint, .mobile-adventure-deck, .title-mobile-showcase {
+  .mobile-swipe-hint, .mobile-adventure-deck {
     display: none;
   }
 
@@ -1193,57 +1194,27 @@
      6. 手機直立專項優化（<= 760px，電腦版完全不受影響）
   ========================================================= */
   @media (max-width: 760px) {
-    /* 手機封面：典藏海報式完整構圖（背景夢幻景深 ＋ 中央燙金畫框完整呈現帥氣男主角與整座奇幻城堡，零裁切！） */
+    /* 手機封面：全螢幕滿版 9:16 專用繪本原畫（帥氣男主角與奇幻城堡滿版完整同框！） */
     #titleScreen {
-      padding: 20px 16px max(18px, env(safe-area-inset-bottom));
+      padding: 26px 16px max(22px, env(safe-area-inset-bottom));
       justify-content: space-between;
       gap: 10px;
     }
     .title-bg {
-      background-position: 18% center;
-      filter: blur(14px) brightness(0.46) saturate(1.18);
-      animation: none;
-      transform: scale(1.08);
+      background-image: url("./assets_art/title_keyart_mobile.webp");
+      background-position: center center;
+      filter: brightness(0.95) saturate(1.06);
+      animation: kenBurns 22s ease-in-out infinite alternate;
     }
-    .title-crest-wrap { margin-top: 0.5vh; padding: 10px 14px 12px; width: 100%; max-width: 360px; background: none; backdrop-filter: none; }
+    .title-vignette {
+      background:
+        linear-gradient(180deg, rgba(10, 18, 32, 0.58) 0%, rgba(10, 18, 32, 0.12) 28%, transparent 56%, rgba(10, 18, 32, 0.82) 100%);
+    }
+    .title-crest-wrap { margin-top: 1vh; padding: 14px 16px 16px; width: 100%; max-width: 360px; }
     .title-edition-ribbon { font-size: 0.78rem; padding: 5px 14px; letter-spacing: 1px; margin-bottom: 8px; }
     .game-logo { font-size: clamp(2.05rem, 9.2vw, 2.65rem); letter-spacing: 3px; }
     .game-subtitle { font-size: 0.92rem; letter-spacing: 2px; margin-top: 6px; }
-
-    .title-mobile-showcase {
-      display: block;
-      position: relative;
-      z-index: 4;
-      width: 100%;
-      max-width: 390px;
-      border-radius: 18px;
-      padding: 4px;
-      background: linear-gradient(135deg, #fce397 0%, #b57c25 48%, #fff3c4 100%);
-      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.72), 0 0 28px rgba(247, 217, 126, 0.28);
-      overflow: hidden;
-    }
-    .title-mobile-showcase-inner {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16 / 9.5;
-      border-radius: 14px;
-      overflow: hidden;
-      background: #101b2a;
-    }
-    .title-mobile-showcase img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center center;
-      display: block;
-      animation: mobileArtBreathe 14s ease-in-out infinite alternate;
-    }
-    @keyframes mobileArtBreathe {
-      0% { transform: scale(1.0); }
-      100% { transform: scale(1.05); }
-    }
-
-    .title-menu { margin-top: 0; margin-bottom: 2px; gap: 9px; max-width: 390px; }
+    .title-menu { margin-top: auto; margin-bottom: 4px; gap: 9px; max-width: 390px; }
     .btn-storybook-primary { padding: 13px 18px; font-size: 1.08rem; }
     .title-credit { font-size: 0.72rem; line-height: 1.45; }
 
@@ -1468,13 +1439,6 @@
     <div class="title-edition-ribbon">✨ 115.10.03 最新法規彙編典藏版 ✨</div>
     <h1 class="game-logo">儲互社選務勇者傳</h1>
     <div class="game-subtitle">— 奪回大圖記・奇幻繪本冒險物語 —</div>
-  </div>
-
-  <!-- 手機直立專屬：完整呈現原畫帥氣男主角與整座奇幻城堡（零裁切） -->
-  <div class="title-mobile-showcase">
-    <div class="title-mobile-showcase-inner">
-      <img src="./assets_art/title_keyart.webp" alt="儲互社選務勇者與奇幻小鎮原畫" />
-    </div>
   </div>
 
   <div class="title-menu">
