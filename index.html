@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>儲互社選務勇者傳：奪回大圖記！｜典藏繪本 RPG</title>
 <meta name="description" content="以 115.10.03 最新版儲蓄互助社選舉罷免辦法、章程範例與幹部移交實務打造的奇幻繪本冒險 RPG！透過探索小鎮與法規卡牌對決，輕鬆精通選務與移交規範。" />
 <meta property="og:type" content="website" />
@@ -42,6 +42,7 @@
     padding: 0;
     width: 100%;
     min-height: 100vh;
+    min-height: 100dvh;
     background: #101622;
     color: var(--ink);
     font-family: var(--sans);
@@ -65,13 +66,14 @@
   #titleScreen {
     position: fixed;
     inset: 0;
+    min-height: 100dvh;
     z-index: 50;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
-    padding: 36px 20px 32px;
+    padding: 36px 20px max(28px, env(safe-area-inset-bottom));
     background: #0e1621;
   }
 
@@ -226,9 +228,11 @@
   ========================================================= */
   #mapScreen {
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     background: radial-gradient(circle at 50% 0%, #24334a 0%, #101723 100%);
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   .studio-hud {
@@ -1168,15 +1172,231 @@
     position: relative;
   }
 
+  /* 手機專屬元件（電腦版隱藏） */
+  .map-scroll-wrap {
+    width: 100%;
+    position: relative;
+  }
+  .mobile-swipe-hint, .mobile-adventure-deck {
+    display: none;
+  }
+
   @media (max-width: 860px) {
     .spell-hand, .relic-showcase-grid { grid-template-columns: 1fr; }
-    .battle-bars-top { grid-template-columns: 1fr; gap: 8px; }
-    .portraits-stage { grid-template-columns: 1fr 1fr; min-height: 175px; }
-    .portrait-frame { width: clamp(136px, 40vw, 185px); height: clamp(160px, 46vw, 215px); }
+    .portraits-stage { grid-template-columns: 1fr 1fr; min-height: 0; }
     .vs-medallion { display: none; }
-    .map-toast { max-width: 90%; font-size: 0.78rem; }
-    .cutin-band { height: 155px; gap: 12px; }
-    .cutin-portrait { height: 165px; width: 130px; }
+    .cutin-band { height: 145px; gap: 12px; }
+    .cutin-portrait { height: 155px; width: 120px; }
+  }
+
+  /* =========================================================
+     6. 手機直立專項優化（<= 760px，電腦版完全不受影響）
+  ========================================================= */
+  @media (max-width: 760px) {
+    /* 封面細部適配 */
+    .title-crest-wrap { padding: 14px 16px 16px; width: 100%; max-width: 360px; }
+    .title-edition-ribbon { font-size: 0.78rem; padding: 5px 14px; letter-spacing: 1px; }
+    .game-logo { font-size: clamp(1.95rem, 8.6vw, 2.55rem); letter-spacing: 3px; }
+    .game-subtitle { font-size: 0.94rem; letter-spacing: 2px; }
+    .btn-storybook-primary { padding: 13px 18px; font-size: 1.08rem; }
+    .title-credit { font-size: 0.72rem; line-height: 1.45; }
+
+    /* 大地圖頂部 HUD 緊湊化 */
+    .studio-hud { padding: 7px 10px; }
+    .studio-hud-inner { gap: 7px; }
+    .hero-avatar-mini { width: 40px; height: 40px; }
+    .hud-lv-line { font-size: 0.88rem; }
+    .bar-mini-track { width: 60px; }
+    .hud-relic-pill { font-size: 0.72rem; padding: 2px 7px; }
+    .hud-btn-group { width: 100%; display: grid; grid-template-columns: repeat(5, auto); gap: 5px; justify-content: space-between; }
+    .hud-btn { padding: 5px 7px; font-size: 0.74rem; white-space: nowrap; }
+
+    /* 任務橫幅緊湊化 */
+    .overworld-shell { margin: 8px auto 18px; padding: 0 10px; gap: 8px; }
+    .quest-scroll-bar { padding: 8px 11px; gap: 7px; border-width: 2px; }
+    .quest-scroll-text { font-size: 0.84rem; line-height: 1.4; }
+
+    /* 可左右滑動不重疊的手繪大地圖 */
+    .mobile-swipe-hint {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: #fde68a;
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-align: center;
+      padding: 2px 0;
+    }
+    .map-scroll-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 15px;
+      border: 3px solid var(--gold);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55);
+      background: #1a2d24;
+    }
+    .map-viewport {
+      width: 780px;
+      min-width: 780px;
+      height: 410px;
+      aspect-ratio: auto;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .node-ring { width: 48px; height: 48px; border-width: 3px; }
+    .map-node.final-boss .node-ring { width: 56px; height: 56px; }
+    .node-status-tag { top: -15px; font-size: 0.66rem; padding: 1px 7px; }
+    .node-label { font-size: 0.72rem; padding: 2px 7px; margin-top: 3px; }
+    .map-hero-token img { width: 42px; height: 42px; border-width: 3px; }
+    .map-chest img { width: 38px; height: 38px; }
+    .map-toast { left: 10px; top: 10px; max-width: 340px; font-size: 0.76rem; padding: 5px 12px; }
+
+    /* 手機專屬：大按鈕六大據點冒險清單 ＋ 六座寶箱列 */
+    .mobile-adventure-deck {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .mob-section-title {
+      font-family: var(--serif);
+      color: var(--gold-bright);
+      font-weight: 900;
+      font-size: 0.96rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2px;
+    }
+    .mob-quest-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .mob-quest-card {
+      width: 100%;
+      background: linear-gradient(95deg, #fffdf7 0%, #f3e4c3 100%);
+      border: 2.5px solid var(--gold);
+      border-radius: 14px;
+      padding: 9px 11px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-align: left;
+      color: #241709;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+    }
+    .mob-quest-card.is-next {
+      border-color: #fde047;
+      box-shadow: 0 0 0 2px rgba(253, 224, 71, 0.55), 0 8px 18px rgba(0, 0, 0, 0.45);
+    }
+    .mob-quest-card.is-cleared {
+      background: linear-gradient(95deg, #f0fdf4 0%, #dcfce7 100%);
+      border-color: #22c55e;
+    }
+    .mob-quest-card.is-final {
+      border-color: #f87171;
+    }
+    .mob-qc-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 2.5px solid var(--gold-dark);
+      object-fit: cover;
+      object-position: center 14%;
+      flex-shrink: 0;
+      background: #fbf5e6;
+    }
+    .mob-qc-info { flex: 1; min-width: 0; }
+    .mob-qc-zone { font-family: var(--serif); font-weight: 900; font-size: 0.96rem; color: #14532d; }
+    .mob-qc-boss { font-size: 0.78rem; color: #5c4d3c; font-weight: 700; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mob-qc-cta {
+      background: linear-gradient(180deg, #ef4444, #991b1b);
+      color: #fff;
+      border: 1.5px solid #fef08a;
+      border-radius: 999px;
+      padding: 5px 11px;
+      font-size: 0.78rem;
+      font-weight: 900;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .mob-quest-card.is-cleared .mob-qc-cta {
+      background: linear-gradient(180deg, #16a34a, #14532d);
+      border-color: #bbf7d0;
+    }
+
+    .mob-chest-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 7px;
+    }
+    .mob-chest-btn {
+      background: linear-gradient(180deg, rgba(30, 44, 68, 0.94), rgba(16, 25, 42, 0.96));
+      border: 1.8px solid rgba(247, 217, 126, 0.65);
+      border-radius: 12px;
+      padding: 8px 9px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #fef3c7;
+      text-align: left;
+    }
+    .mob-chest-btn.opened {
+      border-color: #4ade80;
+      background: rgba(20, 83, 45, 0.48);
+    }
+    .mob-chest-btn img { width: 30px; height: 30px; object-fit: contain; flex-shrink: 0; }
+    .mob-chest-btn.opened img { filter: grayscale(0.5); }
+    .mob-chest-txt { font-size: 0.76rem; font-weight: 800; line-height: 1.3; }
+
+    /* 戰鬥舞台手機緊湊單屏化（從 993px 壓縮至 ~780px 內） */
+    .battle-inner {
+      padding: 8px 10px max(12px, env(safe-area-inset-bottom));
+      gap: 7px;
+      margin: 0 auto;
+    }
+    .battle-bars-top {
+      grid-template-columns: 1fr auto 1fr;
+      gap: 6px;
+    }
+    .combatant-bar-box { padding: 6px 8px; border-radius: 11px; border-width: 1.8px; }
+    .cb-header { font-size: 0.72rem; gap: 4px; }
+    .cb-header span:first-child, .cb-header span:last-child {
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .dual-hp-track { height: 10px; margin-top: 4px; }
+    .round-emblem { padding: 4px 8px; border-radius: 10px; }
+    .round-emblem div:first-child { font-size: 0.62rem !important; letter-spacing: 1px !important; }
+    .round-emblem div:last-child { font-size: 0.86rem !important; }
+
+    .portraits-stage { gap: 8px; }
+    .portrait-frame {
+      width: 100%;
+      max-width: 162px;
+      height: 142px;
+      padding: 4px;
+      border-radius: 14px;
+    }
+    .portrait-inner { border-radius: 10px; }
+    .portrait-nameplate { font-size: 0.76rem; padding: 12px 6px 5px; letter-spacing: 0; }
+
+    .storybook-dialogue { padding: 8px 11px; border-radius: 13px; border-width: 2.5px; }
+    .dlg-speaker { font-size: 0.74rem; padding: 2px 10px; margin-bottom: 4px; }
+    .dlg-text { font-size: 0.88rem; line-height: 1.44; }
+
+    .spell-hand { gap: 7px; }
+    .foil-card { padding: 9px 11px; border-radius: 13px; border-width: 2.5px; gap: 4px; }
+    .fc-name { font-size: 0.9rem; }
+    .fc-law-pill { font-size: 0.68rem; padding: 1px 8px; margin-top: 2px; }
+    .fc-desc { font-size: 0.8rem; line-height: 1.38; }
+
+    .battle-bottom-bar { gap: 7px; }
+    .battle-bottom-bar .hud-btn { font-size: 0.8rem; padding: 7px 11px; }
+    #battleProceedSlot { width: 100%; }
+    #battleProceedSlot .btn-storybook-primary { width: 100% !important; font-size: 0.94rem !important; padding: 10px 14px !important; }
   }
 
   @media print {
@@ -1254,25 +1474,32 @@
       <button class="hud-btn gold" style="padding:7px 14px;" onclick="goNextQuest()">⚡ 前往下一個主線據點 ▶</button>
     </div>
 
-    <div class="map-viewport" id="mapViewport">
-      <img class="map-bg-img" src="./assets_art/world_map.webp" alt="儲蓄互助社奇幻小鎮全景手繪地圖" />
-      <div class="map-sunlight-layer"></div>
-      <div class="map-toast" id="mapToast">歡迎來到儲互社奇幻小鎮！</div>
+    <div class="mobile-swipe-hint">👆 左右滑動欣賞手繪小鎮，或直接點下方「六大據點與寶箱」單手開戰！</div>
 
-      <!-- 動態金色虛線旅途路線（精準沿著手繪石板小路連結 6 大地標） -->
-      <svg class="map-paths-svg" viewBox="0 0 1000 562.5" preserveAspectRatio="none">
-        <path class="quest-path-line" d="M 300 395 Q 360 325 280 220 Q 410 275 520 304 Q 640 320 730 242 Q 705 395 860 416 Q 630 340 480 190 Q 545 150 580 96" />
-      </svg>
+    <div class="map-scroll-wrap" id="mapScrollWrap">
+      <div class="map-viewport" id="mapViewport">
+        <img class="map-bg-img" src="./assets_art/world_map.webp" alt="儲蓄互助社奇幻小鎮全景手繪地圖" />
+        <div class="map-sunlight-layer"></div>
+        <div class="map-toast" id="mapToast">歡迎來到儲互社奇幻小鎮！</div>
 
-      <!-- 主角地圖棋子（平滑移動，停駐據點旁不遮擋角色頭像） -->
-      <div class="map-hero-token" id="mapHeroToken" style="left: 21.5%; top: 75.5%;">
-        <img src="./assets_art/char_hero.webp" alt="勇者位置" />
-        <span class="map-hero-badge">⚔️ 勇者</span>
+        <!-- 動態金色虛線旅途路線（精準沿著手繪石板小路連結 6 大地標） -->
+        <svg class="map-paths-svg" viewBox="0 0 1000 562.5" preserveAspectRatio="none">
+          <path class="quest-path-line" d="M 300 395 Q 360 325 280 220 Q 410 275 520 304 Q 640 320 730 242 Q 705 395 860 416 Q 630 340 480 190 Q 545 150 580 96" />
+        </svg>
+
+        <!-- 主角地圖棋子（平滑移動，停駐據點旁不遮擋角色頭像） -->
+        <div class="map-hero-token" id="mapHeroToken" style="left: 21.5%; top: 75.5%;">
+          <img src="./assets_art/char_hero.webp" alt="勇者位置" />
+          <span class="map-hero-badge">⚔️ 勇者</span>
+        </div>
+
+        <!-- 動態生成的 6 大據點節點與 6 座移交清冊寶箱掛載層 -->
+        <div id="mapMarkersLayer"></div>
       </div>
-
-      <!-- 動態生成的 6 大據點節點與 6 座移交清冊寶箱掛載層 -->
-      <div id="mapMarkersLayer"></div>
     </div>
+
+    <!-- 手機直立專屬：單手大按鈕據點與寶箱快速清單（電腦版隱藏） -->
+    <div class="mobile-adventure-deck" id="mobileAdventureDeck"></div>
   </div>
 </section>
 
@@ -1969,6 +2196,57 @@ function renderMapUI() {
   });
 
   layer.innerHTML = html;
+
+  // 手機專屬大按鈕六大據點 ＋ 六座移交清冊寶箱清單
+  const mobDeck = document.getElementById('mobileAdventureDeck');
+  if (mobDeck) {
+    const questCardsHtml = NODES.map((nd, idx) => {
+      const isCleared = player.clearedNodes.includes(nd.id);
+      const isNext = nextNode && nextNode.id === nd.id;
+      const cta = isCleared ? '✅ 再戰' : (nd.isFinal ? '👑 決戰 ▶' : (isNext ? '❗ 挑戰 ▶' : '⚔️ 挑戰 ▶'));
+      return `
+        <button class="mob-quest-card ${isCleared ? 'is-cleared' : ''} ${isNext ? 'is-next' : ''} ${nd.isFinal ? 'is-final' : ''}" onclick="travelToNode('${nd.id}')">
+          <img class="mob-qc-avatar" src="${nd.img}" alt="${nd.name}" />
+          <div class="mob-qc-info">
+            <div class="mob-qc-zone">${idx + 1}. ${nd.zone}</div>
+            <div class="mob-qc-boss">守關：${nd.name} ｜ ${nd.relic}</div>
+          </div>
+          <span class="mob-qc-cta">${cta}</span>
+        </button>
+      `;
+    }).join('');
+
+    const chestBtnsHtml = LEDGER_CHESTS.map(ch => {
+      const isOpened = player.openedChests.includes(ch.id);
+      return `
+        <button class="mob-chest-btn ${isOpened ? 'opened' : ''}" onclick="travelToChest('${ch.id}')">
+          <img src="./assets_art/relic_chest_3d.webp" alt="${ch.title}" />
+          <div class="mob-chest-txt">${isOpened ? '✅ ' : '✨ '}${ch.title.replace('：', '<br/>')}</div>
+        </button>
+      `;
+    }).join('');
+
+    mobDeck.innerHTML = `
+      <div class="mob-section-title">
+        <span>⚔️ 六大據點快速出擊</span>
+        <span style="font-size:0.78rem;color:#cbd5e1;">已制霸 ${player.clearedNodes.length}/6</span>
+      </div>
+      <div class="mob-quest-list">${questCardsHtml}</div>
+      <div class="mob-section-title" style="margin-top:4px;">
+        <span>📦 六大移交清冊寶箱（點開回血 +20）</span>
+        <span style="font-size:0.78rem;color:#cbd5e1;">已收齊 ${player.openedChests.length}/6</span>
+      </div>
+      <div class="mob-chest-grid">${chestBtnsHtml}</div>
+    `;
+  }
+
+  // 手機橫向地圖自動捲動對準勇者／目前目標位置
+  const scWrap = document.getElementById('mapScrollWrap');
+  if (scWrap && scWrap.scrollWidth > scWrap.clientWidth) {
+    const focusX = nextNode ? nextNode.x : player.heroX;
+    const targetLeft = Math.max(0, Math.round((focusX / 100) * scWrap.scrollWidth - scWrap.clientWidth / 2));
+    scWrap.scrollLeft = targetLeft;
+  }
 }
 
 function travelToChest(chestId) {
