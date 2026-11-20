@@ -2449,7 +2449,7 @@ function startSynth(t) {
    配樂音檔：優先播放 assets_audio/ 的 MP3（打包時自動填入 BGM_BUILD）；
    找不到音檔就退回上面的程式合成旋律。只有按下「配樂：開」才開始下載音檔。
 --------------------------------------------------------- */
-const BGM_BUILD = {};
+const BGM_BUILD = {"bgm_map": "baa39ecb", "bgm_battle": "0168cc52", "bgm_boss": "2b73d298", "bgm_victory": "161eb2df"};
 const BGM_FILES = { town: 'bgm_map', battle: 'bgm_battle', boss: 'bgm_boss', victory: 'bgm_victory' };
 const BGM_VOLUME = 0.55;
 const BGM_DUCK_VOLUME = 0.16;
