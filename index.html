@@ -2724,6 +2724,8 @@
    繪本交響配樂引擎（吉卜力豎琴木管風）＋ 物理音效 ＋ 中文語音
 ========================================================= */
 let audioCtx = null;
+// 關螢幕、切到別的 App 或分頁時為 true：這段期間配樂、語音、音效一律不出聲（見下方「離開畫面」區塊）
+const audioAway = { on: false, checkOnTap: false };
 let musicOn = false;
 let musicTrack = 'town'; // 'town' | 'battle' | 'boss'
 let synthTrack = 'town'; // 程式合成旋律目前播放的曲風
@@ -2736,8 +2738,19 @@ function getAC() {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (AC) audioCtx = new AC();
   }
-  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  wakeAudioCtx();
   return audioCtx;
+}
+
+/* 喚醒音效引擎：被暫停（suspended）或被系統打斷（iPhone 的 interrupted）時恢復；離開畫面期間不喚醒 */
+function wakeAudioCtx() {
+  if (!audioCtx || audioAway.on) return;
+  const s = audioCtx.state;
+  if (s === 'running' || s === 'closed') return;
+  try {
+    const p = audioCtx.resume();
+    if (p && p.catch) p.catch(() => {});
+  } catch (e) {}
 }
 
 /* ---------------------------------------------------------
@@ -2805,7 +2818,7 @@ function splitForSpeech(text) {
 }
 
 function speakText(txt, isEnemy = false) {
-  if (!voiceOn || typeof window === 'undefined' || !window.speechSynthesis) return;
+  if (!voiceOn || audioAway.on || typeof window === 'undefined' || !window.speechSynthesis) return;
   try {
     const synth = window.speechSynthesis;
     synth.cancel();
@@ -2845,6 +2858,7 @@ function speakText(txt, isEnemy = false) {
 }
 
 function playSfx(kind) {
+  if (audioAway.on) return; // 離開畫面時不排音效，免得回來時一次全響
   const ctx = getAC();
   if (!ctx) return;
   const now = ctx.currentTime;
@@ -2918,6 +2932,7 @@ function stepMusic() {
 function startSynth(t) {
   synthTrack = t === 'battle' ? 'battle' : 'town';
   stopMusic();
+  if (audioAway.on) return; // 離開畫面期間不開始；回來時再接著播
   stepMusic();
   musicTimer = setInterval(stepMusic, synthTrack === 'battle' ? 215 : 370);
 }
@@ -2930,7 +2945,8 @@ const BGM_BUILD = {"bgm_map": "baa39ecb", "bgm_battle": "0168cc52", "bgm_boss": 
 const BGM_FILES = { town: 'bgm_map', battle: 'bgm_battle', boss: 'bgm_boss', victory: 'bgm_victory' };
 const BGM_VOLUME = 0.55;
 const BGM_DUCK_VOLUME = 0.16;
-const bgm = { el: null, gain: null, routed: false, track: null, failed: {}, ducked: false, duckTimer: null, fadeTimer: null, speakSeq: 0 };
+// loaded：音檔元素目前載入的是哪一首（回到畫面時用來判斷能不能從暫停處接著播）
+const bgm = { el: null, gain: null, routed: false, track: null, loaded: null, failed: {}, ducked: false, duckTimer: null, fadeTimer: null, speakSeq: 0 };
 
 function bgmUrl(track) {
   const name = BGM_FILES[track];
@@ -2997,8 +3013,10 @@ function playBgm(track) {
   clearTimeout(bgm.fadeTimer);
   const start = () => {
     if (bgm.track !== track || !musicOn) return;
+    if (audioAway.on) return; // 離開畫面期間不開播（例如背景計時器換歌）；回來時由 audioComeBack() 接手
     el.loop = track !== 'victory';
     el.src = url;
+    bgm.loaded = track;
     setBgmVolume(0, 0.02);
     const p = el.play();
     if (p && p.catch) {
@@ -3077,6 +3095,70 @@ function toggleVoice() {
   document.getElementById('btnVoice').textContent = voiceOn ? '🗣️ 語音：開' : '🔇 語音：關';
   if (!voiceOn && window.speechSynthesis) window.speechSynthesis.cancel();
 }
+
+/* ---------------------------------------------------------
+   離開畫面（關螢幕、回桌面、切到別的 App 或分頁、關掉內建瀏覽器）：
+   配樂、語音、音效全部停下；回到遊戲時，配樂原本是「開」就從暫停處接著播。
+   有些手機回來時不准網頁自動出聲，所以回來後第一次點畫面會再確認一次。
+--------------------------------------------------------- */
+function audioGoAway() {
+  if (audioAway.on) return;
+  audioAway.on = true;
+  audioAway.checkOnTap = false;
+  clearTimeout(bgm.fadeTimer);
+  stopMusic();
+  if (bgm.el && !bgm.el.paused) { try { bgm.el.pause(); } catch (e) {} }
+  bgm.speakSeq++; // 讓被中斷的語音不再回頭調整配樂音量
+  if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+  duckBgm(false);
+  if (audioCtx && audioCtx.state === 'running' && audioCtx.suspend) {
+    try {
+      const p = audioCtx.suspend();
+      if (p && p.catch) p.catch(() => {});
+    } catch (e) {}
+  }
+}
+
+/* 同一首從暫停的地方接著播（只在配樂開著、音檔已載入且目前暫停時才動作） */
+function continueBgm() {
+  const el = bgm.el;
+  if (!musicOn || audioAway.on || !el || !bgm.track || bgm.loaded !== bgm.track || !el.paused) return;
+  setBgmVolume(bgmTargetVolume(), 0.3);
+  try {
+    const p = el.play();
+    if (p && p.catch) p.catch(() => {}); // 被擋下時等使用者下一次點畫面（onAnyTap）
+  } catch (e) {}
+}
+
+function audioComeBack() {
+  if (!audioAway.on) return;
+  audioAway.on = false;
+  audioAway.checkOnTap = true;
+  wakeAudioCtx();
+  if (!musicOn) return;
+  if (bgm.track && bgm.loaded === bgm.track) continueBgm();
+  else playBgm(musicTrack); // 離開期間換了畫面（例如戰鬥結束回地圖），或原本是合成旋律
+}
+
+function onAnyTap() {
+  if (audioAway.on) { audioComeBack(); return; } // 保險：有人在點畫面，就代表已經回到遊戲
+  if (!audioAway.checkOnTap) return;
+  audioAway.checkOnTap = false;
+  wakeAudioCtx();
+  continueBgm();
+}
+
+(function initAudioAway() {
+  if (typeof document === 'undefined' || !document.addEventListener) return;
+  const isHidden = () => document.visibilityState === 'hidden' || document.hidden === true;
+  document.addEventListener('visibilitychange', () => {
+    if (isHidden()) audioGoAway();
+    else audioComeBack();
+  });
+  window.addEventListener('pagehide', audioGoAway);
+  window.addEventListener('pageshow', () => { if (!isHidden()) audioComeBack(); });
+  ['click', 'touchend', 'keydown'].forEach(n => document.addEventListener(n, onAnyTap, { capture: true, passive: true }));
+})();
 
 /* =========================================================
    三段字級切換：標準 100% ➔ 大 118% ➔ 特大 134%（切換 html 根字級，全站 rem 一次連動，記憶於本機）
