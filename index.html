@@ -3098,7 +3098,8 @@ function toggleVoice() {
 
 /* ---------------------------------------------------------
    離開畫面（關螢幕、回桌面、切到別的 App 或分頁、關掉內建瀏覽器）：
-   配樂、語音、音效全部停下；回到遊戲時，配樂原本是「開」就從暫停處接著播。
+   配樂、語音、音效全部停下，移交清冊快問快答的倒數也暫停；
+   回到遊戲時，配樂原本是「開」就從暫停處接著播，倒數從剩下的秒數接著跑。
    有些手機回來時不准網頁自動出聲，所以回來後第一次點畫面會再確認一次。
 --------------------------------------------------------- */
 function audioGoAway() {
@@ -3140,23 +3141,34 @@ function audioComeBack() {
   else playBgm(musicTrack); // 離開期間換了畫面（例如戰鬥結束回地圖），或原本是合成旋律
 }
 
+/* 離開／回到畫面時要一起暫停、接續的事：聲音，以及移交清冊快問快答的倒數 */
+function pageGoAway() {
+  audioGoAway();
+  pauseLedgerQuiz();
+}
+
+function pageComeBack() {
+  audioComeBack();
+  resumeLedgerQuiz();
+}
+
 function onAnyTap() {
-  if (audioAway.on) { audioComeBack(); return; } // 保險：有人在點畫面，就代表已經回到遊戲
+  if (audioAway.on) { pageComeBack(); return; } // 保險：有人在點畫面，就代表已經回到遊戲
   if (!audioAway.checkOnTap) return;
   audioAway.checkOnTap = false;
   wakeAudioCtx();
   continueBgm();
 }
 
-(function initAudioAway() {
+(function initPageAway() {
   if (typeof document === 'undefined' || !document.addEventListener) return;
   const isHidden = () => document.visibilityState === 'hidden' || document.hidden === true;
   document.addEventListener('visibilitychange', () => {
-    if (isHidden()) audioGoAway();
-    else audioComeBack();
+    if (isHidden()) pageGoAway();
+    else pageComeBack();
   });
-  window.addEventListener('pagehide', audioGoAway);
-  window.addEventListener('pageshow', () => { if (!isHidden()) audioComeBack(); });
+  window.addEventListener('pagehide', pageGoAway);
+  window.addEventListener('pageshow', () => { if (!isHidden()) pageComeBack(); });
   ['click', 'touchend', 'keydown'].forEach(n => document.addEventListener(n, onAnyTap, { capture: true, passive: true }));
 })();
 
@@ -4087,10 +4099,29 @@ function travelToChest(chestId) {
    （答對：HP +20、HP 上限永久 +5；答錯或逾時不扣血，可重新點交）
 ========================================================= */
 const LEDGER_QUIZ_SECONDS = 20;
-const ledgerUI = { id: null, checks: [], phase: 'check', timer: null, endAt: 0, order: [], picked: -1 };
+// pausedLeft：關螢幕、切出去時倒數還剩幾毫秒（沒有暫停時為 null）
+const ledgerUI = { id: null, checks: [], phase: 'check', timer: null, endAt: 0, pausedLeft: null, order: [], picked: -1 };
 
 function stopLedgerTimer() {
   if (ledgerUI.timer) { clearInterval(ledgerUI.timer); ledgerUI.timer = null; }
+}
+
+/* 關螢幕、切到別的 App 時快問快答倒數暫停；回到遊戲後從剩下的秒數接著倒數 */
+function pauseLedgerQuiz() {
+  if (ledgerUI.phase !== 'quiz' || ledgerUI.pausedLeft !== null) return;
+  ledgerUI.pausedLeft = Math.max(0, ledgerUI.endAt - Date.now());
+  stopLedgerTimer();
+}
+
+function resumeLedgerQuiz() {
+  if (ledgerUI.pausedLeft === null) return;
+  const left = ledgerUI.pausedLeft;
+  ledgerUI.pausedLeft = null;
+  if (ledgerUI.phase !== 'quiz') return;
+  ledgerUI.endAt = Date.now() + left;
+  stopLedgerTimer();
+  ledgerUI.timer = setInterval(tickLedgerTimer, 100);
+  tickLedgerTimer();
 }
 
 function shuffledIndexes(n) {
@@ -4110,6 +4141,7 @@ function openLedgerCard(chestId) {
   const ch = LEDGER_CHESTS.find(c => c.id === chestId);
   if (!ch) return;
   stopLedgerTimer();
+  ledgerUI.pausedLeft = null;
   const stored = player.openedChests.includes(ch.id);
   ledgerUI.id = ch.id;
   ledgerUI.checks = ch.checks.map(() => stored);
@@ -4258,6 +4290,7 @@ function startLedgerQuiz() {
   ledgerUI.phase = 'quiz';
   ledgerUI.order = shuffledIndexes(ch.quiz.options.length);
   ledgerUI.picked = -1;
+  ledgerUI.pausedLeft = null;
   ledgerUI.endAt = Date.now() + LEDGER_QUIZ_SECONDS * 1000;
   renderLedgerCard();
   speakText(ch.quiz.q);
