@@ -2957,6 +2957,45 @@
     .duty-panel h2 { font-size: 1.12rem; }
     .duty-panel .duty-avatar { width: 2.6rem; height: 2.6rem; font-size: 1.45rem; }
   }
+  /* =========================================================
+     開始前確認是來福好友（LINE 官方帳號 @721byaqh「儲蓄互助社｜生活圈」）
+  ========================================================= */
+  #laifuGate { z-index: 120; }
+  .laifu-gate-modal { max-width: 480px; }
+  .laifu-gate-modal .sm-head { background: linear-gradient(135deg, #c2410c 0%, #14532d 100%); }
+  .laifu-body { display: flex; flex-direction: column; gap: 12px; }
+  .laifu-intro { display: flex; align-items: center; gap: 14px; }
+  .laifu-dog {
+    width: 6.2rem; height: 6.2rem; flex: 0 0 auto;
+    border-radius: 50%; background: #fff; border: 3px solid var(--gold);
+    object-fit: cover; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  }
+  .laifu-lead { font-weight: 900; font-size: 1.08rem; color: var(--emerald); margin-bottom: 6px; }
+  .laifu-feats { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+  .laifu-feats li { font-weight: 800; font-size: 1.04rem; color: var(--ink); }
+  .laifu-feats li::before { content: '・'; color: #c2410c; }
+  .laifu-name-note { font-size: 0.95rem; color: var(--muted); font-weight: 700; text-align: center; }
+  .laifu-step { display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
+  .laifu-btn { display: block; text-align: center; text-decoration: none; font-size: 1.14rem; padding: 14px 18px; min-height: 48px; }
+  .laifu-btn2 { width: 100%; font-size: 1.02rem; min-height: 46px; background: #1e3a5f; }
+  .laifu-hint { font-size: 0.95rem; color: var(--muted); font-weight: 700; line-height: 1.55; text-align: center; }
+  .laifu-msg { font-size: 1.06rem; font-weight: 800; color: var(--emerald); text-align: center; padding: 14px 6px; }
+  .laifu-note { font-size: 1rem; font-weight: 900; color: var(--crimson); text-align: center; line-height: 1.5; }
+  .laifu-qr-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .laifu-qr { width: 12.5rem; height: 12.5rem; background: #fff; padding: 6px; border-radius: 12px; border: 2px solid var(--gold); }
+  .laifu-qr-cap { font-weight: 900; color: var(--ink); font-size: 1.02rem; text-align: center; }
+  .laifu-link {
+    background: none; border: none; color: #1d4ed8; text-decoration: underline;
+    font-weight: 800; font-size: 0.98rem; padding: 10px; min-height: 44px; cursor: pointer;
+  }
+  .hud-btn.laifu-ask-btn {
+    background: linear-gradient(180deg, #fb923c, #c2410c); color: #fff;
+    border-color: #ffedd5; padding: 12px 18px; font-size: 0.95rem;
+  }
+  @media (max-width: 760px) {
+    .laifu-dog { width: 5rem; height: 5rem; }
+    .laifu-qr { width: 11rem; height: 11rem; }
+  }
 </style>
 </head>
 <body>
@@ -3250,7 +3289,29 @@
       <div class="no-print" style="display:flex;justify-content:center;gap:10px;margin-top:16px;flex-wrap:wrap;">
         <button class="btn-storybook-primary" style="width:auto;padding:12px 24px;font-size:1rem;" onclick="window.print()">🖨️ 列印／儲存 PDF 證書</button>
         <button class="hud-btn" style="background:#142038;padding:12px 18px;font-size:0.95rem;" onclick="resetAllProgress()">🔄 重新開始冒險</button>
+        <button class="hud-btn laifu-ask-btn" onclick="laifuOpenLine(LAIFU.chatUrl)">🐶 有問題問來福</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🐶 開始前確認是來福好友（真的問 LINE；不是好友要先加，才能開始冒險） -->
+<div class="modal-backdrop" id="laifuGate">
+  <div class="storybook-modal laifu-gate-modal" role="dialog" aria-modal="true" aria-labelledby="laifuGateTitle">
+    <div class="sm-head">
+      <span id="laifuGateTitle">🐶 先加來福好友，就能開始冒險！</span>
+      <button class="hud-btn" onclick="laifuGateClose()">✕ 返回</button>
+    </div>
+    <div class="sm-body laifu-body">
+      <div class="laifu-intro">
+        <img class="laifu-dog" src="./assets_art/laifu_dog.webp" alt="來福" />
+        <div>
+          <div class="laifu-lead">來福是儲互社的 LINE 小幫手：</div>
+          <ul class="laifu-feats"><li>問法規</li><li>防詐提醒</li><li>早安圖</li><li>查股金</li></ul>
+        </div>
+      </div>
+      <div class="laifu-name-note">（LINE 上的名字是「儲蓄互助社｜生活圈」）</div>
+      <div class="laifu-step" id="laifuGateStep"></div>
     </div>
   </div>
 </div>
@@ -4563,7 +4624,7 @@ function startTitleParticles() {
 /* =========================================================
    標題 ⇄ 手繪大世界地圖切換與互動
 ========================================================= */
-function enterWorldMap(useSave) {
+function enterWorldMapNow(useSave) {
   playSfx('harp');
   if (useSave) loadGame();
   else {
@@ -4575,6 +4636,250 @@ function enterWorldMap(useSave) {
   renderMapUI();
   showMapToast("🗺️ 點擊發光的角色據點或 3D 寶箱，展開奇幻選務冒險！");
   autoStartMusic();
+}
+
+/* =========================================================
+   開始前確認是來福好友（2026-11-21 使用者決定：一定要真的是來福好友才能玩）
+   ・來福＝LINE 官方帳號 @721byaqh「儲蓄互助社｜生活圈」。用「儲互社」那組 LINE 登入設定（已連來福帳號）
+     底下的遊戲專用入口（LIFF 2009715141-LrJWnlix，權限只有 profile，登入時跳加好友畫面）問 LINE「是不是好友」；
+     遊戲不存、不傳任何 LINE 個人資料
+   ・只在正式網址檢查；本機開檔、本機測試網站不檢查（測試用 window.__LAIFU_TEST 換成假的 LINE）
+   ・手機 LINE 裡：自動確認（沒登入就請 LINE 登入，第一次會跳授權畫面）
+     電腦：QR code 請他用手機 LINE 掃，另留「在這台電腦登入 LINE」；手機其他瀏覽器：「用 LINE 打開遊戲」
+   ・確定「不是好友」才擋；LINE 那邊出錯、查不了，就先讓他玩（免得所有人卡在門口）
+   ・換了 LIFF 入口，QR code（LAIFU_QR_GAME）要跟著重產
+========================================================= */
+const LAIFU = {
+  liffId: '2009715141-LrJWnlix',
+  liffUrl: 'https://liff.line.me/2009715141-LrJWnlix',
+  addUrl: 'https://line.me/R/ti/p/@721byaqh',
+  chatUrl: 'https://line.me/R/oaMessage/%40721byaqh/',
+  host: 'cu-election-rpg.pages.dev',
+  sdk: 'https://static.line-scdn.net/liff/edge/2/sdk.js',
+  intentKey: 'cu_rpg_laifu_intent',
+  triedKey: 'cu_rpg_laifu_login_tried'
+};
+const LAIFU_QR_GAME = "<svg viewBox=\"0 0 37 37\" class=\"laifu-qr\"><path fill=\"#fff\" d=\"M0 0h37v37h-37z\"/><path class=\"qrline\" stroke=\"#000\" d=\"M2 2.5h7m3 0h5m2 0h1m2 0h1m1 0h1m3 0h7m-33 1h1m5 0h1m1 0h1m1 0h2m1 0h2m1 0h1m1 0h2m1 0h2m1 0h1m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m3 0h3m1 0h1m5 0h4m2 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h7m1 0h1m1 0h4m1 0h2m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h2m1 0h1m1 0h1m3 0h1m8 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m2 0h1m2 0h1m3 0h1m1 0h2m3 0h1m2 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-25 1h3m2 0h1m1 0h2m1 0h1m4 0h1m-23 1h1m1 0h4m1 0h1m2 0h1m2 0h1m2 0h2m5 0h3m1 0h2m1 0h1m-27 1h1m2 0h2m1 0h1m3 0h3m1 0h6m3 0h4m-32 1h1m1 0h1m3 0h1m8 0h2m4 0h4m1 0h1m1 0h3m1 0h1m-32 1h2m1 0h1m2 0h2m1 0h1m7 0h1m1 0h1m1 0h1m2 0h1m1 0h1m2 0h2m-32 1h1m1 0h2m2 0h1m1 0h2m2 0h4m1 0h1m1 0h1m3 0h1m1 0h2m4 0h1m-31 1h3m4 0h4m1 0h1m1 0h1m1 0h5m3 0h1m3 0h2m-30 1h1m4 0h8m1 0h2m1 0h5m1 0h1m1 0h4m-30 1h3m2 0h1m4 0h3m1 0h1m1 0h2m2 0h1m2 0h3m1 0h2m1 0h1m1 0h1m-32 1h1m2 0h3m1 0h5m2 0h1m1 0h2m1 0h1m1 0h1m1 0h5m-27 1h1m2 0h1m1 0h6m2 0h3m1 0h4m3 0h1m1 0h1m1 0h3m-32 1h1m1 0h1m1 0h4m1 0h3m1 0h1m1 0h1m2 0h1m1 0h4m2 0h1m1 0h4m-33 1h5m2 0h1m1 0h1m1 0h2m1 0h1m4 0h1m2 0h2m2 0h1m1 0h5m-27 1h1m1 0h5m1 0h1m1 0h2m6 0h1m4 0h1m1 0h1m-32 1h5m5 0h1m1 0h4m2 0h1m2 0h1m4 0h1m1 0h1m1 0h1m-31 1h1m1 0h2m2 0h4m1 0h3m1 0h2m2 0h2m1 0h4m4 0h3m-33 1h1m1 0h2m1 0h1m2 0h1m2 0h2m1 0h1m1 0h5m1 0h1m1 0h1m3 0h3m-31 1h2m1 0h1m2 0h4m1 0h2m1 0h2m2 0h1m1 0h1m2 0h6m2 0h1m-24 1h1m2 0h4m1 0h3m2 0h1m2 0h1m3 0h1m1 0h1m-31 1h7m2 0h1m1 0h2m1 0h3m2 0h1m1 0h4m1 0h1m1 0h1m1 0h2m-32 1h1m5 0h1m1 0h4m2 0h3m2 0h1m2 0h3m3 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m4 0h1m3 0h1m1 0h3m1 0h6m3 0h1m-33 1h1m1 0h3m1 0h1m1 0h4m4 0h2m4 0h1m1 0h2m1 0h1m2 0h1m1 0h1m-33 1h1m1 0h3m1 0h1m3 0h5m4 0h3m1 0h1m1 0h1m1 0h2m1 0h3m-33 1h1m5 0h1m1 0h3m1 0h1m3 0h5m1 0h2m3 0h2m1 0h3m-33 1h7m5 0h1m4 0h1m1 0h1m2 0h4m1 0h3\"/></svg>"; // 內容：LAIFU.liffUrl
+const LAIFU_QR_ADD = "<svg viewBox=\"0 0 33 33\" class=\"laifu-qr\"><path fill=\"#fff\" d=\"M0 0h33v33h-33z\"/><path class=\"qrline\" stroke=\"#000\" d=\"M2 2.5h7m1 0h2m2 0h2m1 0h5m2 0h7m-29 1h1m5 0h1m1 0h1m2 0h1m2 0h1m3 0h3m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h3m2 0h2m3 0h1m1 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m1 0h3m4 0h2m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m4 0h1m3 0h2m2 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m3 0h3m1 0h3m2 0h2m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h1m2 0h3m1 0h1m1 0h1m1 0h1m-19 1h2m1 0h1m1 0h2m2 0h1m6 0h1m1 0h1m2 0h1m1 0h5m-26 1h1m1 0h1m1 0h2m4 0h2m2 0h2m2 0h3m2 0h1m1 0h1m-25 1h4m2 0h1m4 0h2m3 0h1m3 0h2m1 0h2m-29 1h1m1 0h1m1 0h1m3 0h1m1 0h1m6 0h2m2 0h3m3 0h1m-26 1h1m3 0h1m2 0h4m3 0h3m1 0h1m1 0h2m1 0h1m-26 1h1m1 0h1m1 0h1m4 0h3m2 0h1m5 0h4m3 0h2m-29 1h1m5 0h1m2 0h1m1 0h1m3 0h1m2 0h1m1 0h2m1 0h1m2 0h1m1 0h1m-28 1h1m5 0h3m3 0h1m1 0h1m1 0h4m1 0h2m3 0h2m-29 1h1m1 0h1m2 0h2m2 0h2m1 0h1m1 0h4m1 0h1m1 0h3m1 0h1m2 0h1m-26 1h3m7 0h1m1 0h1m5 0h1m5 0h2m-29 1h1m1 0h2m2 0h3m2 0h2m1 0h1m1 0h2m3 0h1m1 0h1m2 0h3m-28 1h1m2 0h1m3 0h1m1 0h1m2 0h1m1 0h1m1 0h1m2 0h1m1 0h1m1 0h1m2 0h1m-28 1h1m1 0h1m1 0h1m1 0h1m4 0h1m2 0h4m2 0h5m3 0h1m-21 1h1m2 0h1m2 0h1m2 0h1m1 0h2m3 0h1m-25 1h7m1 0h1m1 0h2m2 0h1m3 0h3m1 0h1m1 0h1m1 0h3m-29 1h1m5 0h1m2 0h1m2 0h7m1 0h1m3 0h1m3 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m1 0h1m1 0h2m1 0h2m2 0h6m1 0h1m-28 1h1m1 0h3m1 0h1m7 0h1m1 0h1m1 0h1m1 0h2m2 0h5m-29 1h1m1 0h3m1 0h1m1 0h4m1 0h1m5 0h1m3 0h4m1 0h1m-29 1h1m5 0h1m1 0h1m2 0h1m3 0h1m1 0h2m1 0h2m1 0h1m1 0h1m1 0h1m-28 1h7m3 0h1m2 0h2m1 0h2m2 0h1m1 0h1m1 0h1m2 0h2\"/></svg>";   // 內容：LAIFU.addUrl
+const laifuGate = { on: false, state: 'off', liff: null, pending: null, mode: 'new', open: false, busy: false, note: '' };
+// state：off 不檢查｜loading 確認中｜login 要先登入 LINE｜notFriend 還不是好友｜friend 是好友｜error 查不了（放行）
+
+function laifuEnv() {
+  const ua = navigator.userAgent || '';
+  return {
+    inLine: / Line\//i.test(ua),
+    mobile: /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)
+  };
+}
+function laifuGateAllows() { return ['off', 'friend', 'error'].includes(laifuGate.state); }
+function laifuWithin(p, ms) {
+  return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('等太久')), ms))]);
+}
+function laifuLoadSdk() {
+  const t = window.__LAIFU_TEST;
+  if (t && t.liff) return Promise.resolve(t.liff);
+  if (window.liff && window.liff.init) return Promise.resolve(window.liff);
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = LAIFU.sdk;
+    s.charset = 'utf-8';
+    s.async = true;
+    s.onload = () => (window.liff && window.liff.init) ? resolve(window.liff) : reject(new Error('LINE 程式沒載到'));
+    s.onerror = () => reject(new Error('LINE 程式下載失敗'));
+    document.head.appendChild(s);
+  });
+}
+async function laifuIsFriend() {
+  const r = await laifuWithin(laifuGate.liff.getFriendship(), 10000);
+  return !!(r && r.friendFlag);
+}
+
+function laifuGateInit() {
+  laifuGate.on = !!(window.__LAIFU_TEST || (location.hostname === LAIFU.host && LAIFU.liffId));
+  if (!laifuGate.on) { laifuGate.state = 'off'; return; }
+  laifuGate.state = 'loading';
+  laifuGatePrepare();
+}
+
+async function laifuGatePrepare() {
+  let next = 'error';
+  try {
+    laifuGate.liff = await laifuWithin(laifuLoadSdk(), 15000);
+    await laifuWithin(laifuGate.liff.init({ liffId: LAIFU.liffId }), 15000);
+    laifuCleanLoginParams();
+    if (!laifuGate.liff.isLoggedIn()) next = 'login';
+    else next = (await laifuIsFriend()) ? 'friend' : 'notFriend';
+  } catch (e) {
+    console.warn('[來福] 查不了是不是好友，先讓玩家玩：', (e && e.message) || e);
+    next = 'error';
+  }
+  laifuResumeIntent(next);
+  laifuSetState(next);
+}
+
+/* 從 LINE 登入回來：把登入前按的那顆（開始／繼續）接著做 */
+function laifuResumeIntent(next) {
+  let it = null;
+  try {
+    it = JSON.parse(sessionStorage.getItem(LAIFU.intentKey) || 'null');
+    sessionStorage.removeItem(LAIFU.intentKey);
+  } catch (e) {}
+  if (!it || !(Date.now() - it.t < 10 * 60 * 1000) || laifuGate.pending) return;
+  laifuGate.mode = it.mode === 'continue' ? 'continue' : 'new';
+  const useSave = laifuGate.mode === 'continue';
+  laifuGate.pending = () => enterWorldMapNow(useSave);
+  if (next === 'login') laifuGate.note = 'LINE 沒有完成確認。請再試一次，跳出授權畫面時按「許可」。';
+  if (next === 'login' || next === 'notFriend') laifuGateShow();
+}
+
+/* LINE 登入回來網址會帶一串代碼；初始化用完就拿掉，免得重新整理時又送一次 */
+function laifuCleanLoginParams() {
+  try {
+    const u = new URL(location.href);
+    if (!u.searchParams.has('liffClientId') && !u.searchParams.has('code')) return;
+    ['code', 'state', 'liffClientId', 'liffRedirectUri', 'error', 'error_description'].forEach(k => u.searchParams.delete(k));
+    const q = u.searchParams.toString();
+    history.replaceState(null, '', u.pathname + (q ? '?' + q : '') + u.hash);
+  } catch (e) {}
+}
+
+function laifuSetState(s) {
+  laifuGate.state = s;
+  if (laifuGateAllows()) {
+    const fn = laifuGate.pending;
+    laifuGate.pending = null;
+    laifuGate.note = '';
+    if (laifuGate.open) laifuGateClose(true);
+    if (fn) fn();
+    return;
+  }
+  if (s === 'login' && laifuGate.pending && laifuEnv().inLine && !laifuTriedLoginRecently()) {
+    laifuGateShow();
+    laifuLogin();
+    return;
+  }
+  if (laifuGate.open) laifuGateRender();
+}
+
+/* 進地圖之前都經過這裡：是好友（或不用檢查、查不了）就直接做，不然先開來福畫面 */
+function laifuGateRun(fn, mode) {
+  if (laifuGateAllows()) { fn(); return; }
+  laifuGate.pending = fn;
+  laifuGate.mode = mode || 'new';
+  laifuGate.note = '';
+  playSfx('click');
+  laifuGateShow();
+  if (laifuGate.state === 'login' && laifuEnv().inLine && !laifuTriedLoginRecently()) laifuLogin();
+}
+
+function laifuTriedLoginRecently() {
+  try { return Date.now() - Number(sessionStorage.getItem(LAIFU.triedKey) || 0) < 2 * 60 * 1000; } catch (e) { return false; }
+}
+
+function laifuLogin() {
+  if (!laifuGate.liff) return;
+  try {
+    sessionStorage.setItem(LAIFU.intentKey, JSON.stringify({ mode: laifuGate.mode, t: Date.now() }));
+    sessionStorage.setItem(LAIFU.triedKey, String(Date.now()));
+  } catch (e) {}
+  laifuGate.note = '⏳ 正在打開 LINE 登入…';
+  if (laifuGate.open) laifuGateRender();
+  try {
+    laifuGate.liff.login({ redirectUri: location.origin + location.pathname });
+  } catch (e) {
+    console.warn('[來福] 叫不出 LINE 登入，先讓玩家玩：', (e && e.message) || e);
+    laifuSetState('error');
+  }
+}
+
+/* 加好友、問來福：在 LINE 裡由 LINE 接手；其他瀏覽器另開分頁，遊戲留著 */
+function laifuOpenLine(url) {
+  if (laifuEnv().inLine) { location.href = url; return; }
+  const w = window.open(url, '_blank', 'noopener');
+  if (!w) location.href = url;
+}
+
+async function laifuRecheck(auto) {
+  if (laifuGate.busy || laifuGate.state !== 'notFriend' || !laifuGate.liff) return;
+  laifuGate.busy = true;
+  if (!auto) { laifuGate.note = '⏳ 確認中…'; laifuGateRender(); }
+  let next = 'notFriend';
+  try {
+    next = (await laifuIsFriend()) ? 'friend' : 'notFriend';
+  } catch (e) {
+    console.warn('[來福] 再確認時出錯，先讓玩家玩：', (e && e.message) || e);
+    next = 'error';
+  }
+  laifuGate.busy = false;
+  if (auto && next === 'notFriend' && laifuGate.state !== 'notFriend') return;
+  laifuGate.note = (next === 'notFriend' && !auto) ? '還沒看到你加入來福。加好了再按一次。' : '';
+  laifuSetState(next);
+}
+
+function laifuGateShow() {
+  laifuGate.open = true;
+  laifuGateRender();
+  document.getElementById('laifuGate').classList.add('open');
+}
+
+function laifuGateClose(keepPending) {
+  laifuGate.open = false;
+  if (!keepPending) { laifuGate.pending = null; laifuGate.note = ''; }
+  document.getElementById('laifuGate').classList.remove('open');
+}
+
+function laifuGateRender() {
+  const box = document.getElementById('laifuGateStep');
+  const title = document.getElementById('laifuGateTitle');
+  if (!box || !title) return;
+  const env = laifuEnv();
+  const s = laifuGate.state;
+  title.textContent = s === 'loading' ? '🐶 正在確認你是不是來福好友' : '🐶 先加來福好友，就能開始冒險！';
+  let h = '';
+  if (s === 'loading') {
+    h = '<div class="laifu-msg">⏳ 正在請 LINE 確認你是不是來福的好友…</div>';
+  } else if (s === 'notFriend') {
+    if (env.mobile || env.inLine) {
+      h = '<button class="btn-storybook-primary laifu-btn" id="laifuAddBtn" onclick="laifuOpenLine(LAIFU.addUrl)">➕ 加入來福</button>'
+        + '<button class="btn-storybook-glass laifu-btn2" id="laifuRecheckBtn" onclick="laifuRecheck()">我加好了，再確認一次</button>'
+        + '<div class="laifu-hint">加好友之後回到這裡，就會自動確認。<br>已經加過、但封鎖了來福的話，要先解除封鎖。</div>';
+    } else {
+      h = `<div class="laifu-qr-wrap" id="laifuQrAdd">${LAIFU_QR_ADD}<div class="laifu-qr-cap">用手機 LINE 的「掃描 QR code」掃這裡，<br>按「加入好友」</div></div>`
+        + '<button class="btn-storybook-primary laifu-btn" id="laifuRecheckBtn" onclick="laifuRecheck()">我加好了，再確認一次</button>'
+        + '<div class="laifu-hint">已經加過、但封鎖了來福的話，要先解除封鎖。</div>';
+    }
+  } else if (s === 'login') {
+    if (env.inLine) {
+      h = '<button class="btn-storybook-primary laifu-btn" id="laifuLoginBtn" onclick="laifuLogin()">請 LINE 確認</button>'
+        + '<div class="laifu-hint">跳出 LINE 的授權畫面時，請按「許可」。</div>';
+    } else if (env.mobile) {
+      h = `<a class="btn-storybook-primary laifu-btn" id="laifuOpenInLine" href="${LAIFU.liffUrl}">用 LINE 打開遊戲</a>`
+        + '<div class="laifu-hint">在 LINE 裡玩，LINE 才能確認你加了來福。</div>'
+        + '<button class="laifu-link" id="laifuLoginBtn" onclick="laifuLogin()">在這個瀏覽器登入 LINE</button>';
+    } else {
+      h = `<div class="laifu-qr-wrap" id="laifuQrGame">${LAIFU_QR_GAME}<div class="laifu-qr-cap">用手機 LINE 的「掃描 QR code」掃這裡，<br>在手機上玩</div></div>`
+        + '<div class="laifu-hint">在 LINE 裡玩，LINE 才能確認你加了來福。</div>'
+        + '<button class="laifu-link" id="laifuLoginBtn" onclick="laifuLogin()">在這台電腦登入 LINE</button>';
+    }
+  }
+  if (laifuGate.note) h += `<div class="laifu-note">${laifuGate.note}</div>`;
+  box.innerHTML = h;
+}
+
+/* 去加好友、回到遊戲時自動再確認一次 */
+(function initLaifuRecheck() {
+  if (typeof document === 'undefined' || !document.addEventListener) return;
+  const again = () => {
+    if (document.visibilityState === 'hidden' || laifuGate.state !== 'notFriend') return;
+    setTimeout(() => laifuRecheck(true), 600);
+  };
+  document.addEventListener('visibilitychange', again);
+  window.addEventListener('focus', again);
+  window.addEventListener('pageshow', again);
+})();
+
+function enterWorldMap(useSave) {
+  laifuGateRun(() => enterWorldMapNow(useSave), useSave ? 'continue' : 'new');
 }
 
 function backToTitle() {
@@ -7258,6 +7563,7 @@ initFontLevel();
 startTitleParticles();
 try {
   setupTitleButtons();
+  laifuGateInit();
   const h = (window.location && window.location.hash) || '';
   if (h === '#voice-manifest') {
     showVoiceManifest();
@@ -7265,9 +7571,11 @@ try {
     enterWorldMap(false);
   } else if (h.startsWith('#battle=')) {
     const nid = h.split('=')[1];
-    enterWorldMap(false);
-    const target = NODES.find(n => n.id === nid) || NODES[NODES.length - 1];
-    startBattle(target);
+    laifuGateRun(() => {
+      enterWorldMapNow(false);
+      const target = NODES.find(n => n.id === nid) || NODES[NODES.length - 1];
+      startBattle(target);
+    }, 'new');
   }
 } catch (e) {}
 
