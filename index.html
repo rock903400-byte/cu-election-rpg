@@ -14,10 +14,10 @@
     } catch (e) {}
   })();
 </script>
-<meta name="description" content="以 115.10.03 最新版儲蓄互助社選舉罷免辦法、章程範例與幹部移交實務打造的奇幻繪本冒險 RPG！透過探索小鎮與法規卡牌對決，輕鬆精通選務與移交規範。" />
+<meta name="description" content="以 115.10.03 最新版儲蓄互助社選舉罷免辦法、章程範例與幹部移交實務打造的奇幻繪本冒險 RPG！坐鎮選務值班，一件件判斷申請書、選票與移交清冊，輕鬆精通選務與移交規範。" />
 <meta property="og:type" content="website" />
 <meta property="og:title" content="儲互社選務勇者傳：奪回大圖記！" />
-<meta property="og:description" content="115.10.03 最新法規繪本冒險 RPG｜巡歷六大據點、收集六大移交清冊、擊破抗不移交魔王！" />
+<meta property="og:description" content="115.10.03 最新法規繪本冒險 RPG｜六關選務值班、收集六大移交清冊、擊破抗不移交魔王！" />
 <meta property="og:url" content="https://cu-election-rpg.pages.dev/" />
 <meta property="og:image" content="https://cu-election-rpg.pages.dev/assets_art/og_cover.jpg" />
 <meta property="og:image:width" content="1200" />
@@ -2484,6 +2484,479 @@
     .sm-head { display: none !important; }
     .cert-ledger-seal { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
+
+  /* =========================================================
+     選務值班：文件一件件上門、你來判；判錯開糾正單、扣公信力
+  ========================================================= */
+  #dutyScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: none;
+    flex-direction: column;
+    background: #0c121e;
+    overflow-y: auto;
+  }
+  #dutyScreen.open { display: flex; }
+
+  .duty-inner {
+    position: relative;
+    z-index: 5;
+    flex: 1 0 auto;
+    width: 100%;
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 10px 14px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .duty-inner.hit-shake { animation: stageShake 0.38s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+
+  .duty-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 10px;
+    background: rgba(12, 18, 30, 0.84);
+    border: 2px solid var(--gold);
+    border-radius: 14px;
+    padding: 8px 12px;
+    color: #fef3c7;
+  }
+  .duty-day { font-family: var(--serif); font-weight: 900; font-size: 1.04rem; color: var(--gold-bright); line-height: 1.3; }
+  .duty-day small { display: block; font-family: var(--sans); font-size: 0.78rem; color: #cbd5e1; font-weight: 700; }
+  .duty-stats { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-weight: 900; }
+  .duty-trust { display: inline-flex; align-items: center; gap: 1px; font-size: 1.12rem; }
+  .duty-trust .lost { filter: grayscale(1); opacity: 0.3; }
+  .duty-trust-label { font-size: 0.78rem; color: #cbd5e1; margin-right: 4px; }
+  .duty-score { font-size: 0.98rem; color: #fde68a; }
+  .duty-progress { font-size: 0.82rem; color: #cbd5e1; }
+  .duty-streak { font-size: 0.86rem; color: #fb923c; }
+  .duty-streak:empty { display: none; }
+  .duty-tools { display: flex; gap: 6px; flex-wrap: wrap; }
+  .duty-tools .hud-btn { padding: 6px 10px; font-size: 0.86rem; }
+  .hud-btn.armed { background: #b91c1c; border-color: #fecaca; color: #fff; }
+
+  .duty-queue {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 2.9rem;
+    background: rgba(255, 253, 247, 0.1);
+    border: 1.5px dashed rgba(247, 217, 126, 0.55);
+    border-radius: 12px;
+    padding: 6px 10px;
+    color: #f8fafc;
+    font-weight: 800;
+    font-size: 0.9rem;
+  }
+  .duty-queue-label { color: #fde68a; }
+  .duty-q-person {
+    position: relative;
+    width: 2.3rem;
+    height: 2.3rem;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fffdf5, #efe3c8);
+    border: 2px solid var(--gold);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+  }
+  .duty-q-mood { position: absolute; right: -7px; bottom: -6px; font-size: 0.92rem; }
+  .duty-q-more { color: #e2e8f0; }
+  .duty-timer { margin-left: auto; font-variant-numeric: tabular-nums; color: #bbf7d0; }
+  .duty-timer.mid { color: #fde68a; }
+  .duty-timer.slow { color: #fca5a5; }
+  .duty-q-msg { flex: 1 1 100%; font-size: 0.82rem; color: #fecaca; }
+  .duty-pips { letter-spacing: 3px; color: #fca5a5; }
+
+  .duty-stage { display: flex; flex-direction: column; gap: 10px; }
+
+  .duty-visitor { display: flex; gap: 10px; align-items: flex-start; animation: dutyIn 0.35s ease both; }
+  .duty-avatar {
+    flex: 0 0 auto;
+    width: 3.4rem;
+    height: 3.4rem;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fffdf5, #efe3c8);
+    border: 3px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.95rem;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  }
+  .duty-bubble {
+    flex: 1 1 auto;
+    min-width: 0;
+    background: linear-gradient(180deg, #fffdf7, #f4e6c8);
+    border: 2.5px solid var(--gold);
+    border-radius: 14px;
+    padding: 9px 13px;
+    font-weight: 800;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #24180b;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+  }
+  .duty-bubble b { color: #14532d; }
+  .duty-bubble.boss { border-color: #dc2626; }
+  .duty-bubble.boss b { color: #8f1d21; }
+  .duty-role {
+    display: inline-block;
+    background: #14532d;
+    color: #fff;
+    border-radius: 999px;
+    padding: 1px 9px;
+    font-size: 0.76rem;
+    margin-right: 6px;
+    vertical-align: 2px;
+  }
+  .duty-role.staff { background: #1e3a8a; }
+  .duty-role.boss { background: #8f1d21; }
+  .duty-role.mentor { background: #6d28d9; }
+
+  .duty-doc,
+  .duty-memo {
+    position: relative;
+    background: #fffef7;
+    color: #2b2116;
+    border: 2px solid #c9b48a;
+    border-radius: 8px;
+    padding: 12px 14px;
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.5);
+    animation: dutyIn 0.4s ease both;
+  }
+  .duty-doc { font-family: var(--serif); }
+  .duty-doc-head {
+    text-align: center;
+    font-weight: 900;
+    font-size: 0.95rem;
+    border-bottom: 3px double #8a6d3b;
+    padding: 0 4.8rem 6px;
+    margin-bottom: 6px;
+    line-height: 1.45;
+  }
+  .duty-doc-head small { display: block; font-family: var(--sans); font-weight: 700; font-size: 0.8rem; color: #6b5a43; }
+  .duty-doc-title { font-weight: 900; font-size: 1.14rem; color: #14532d; padding: 2px 0 4px; }
+  .duty-doc-line {
+    font-family: var(--sans);
+    font-size: 1.02rem;
+    font-weight: 800;
+    line-height: 1.5;
+    padding: 6px 0;
+    border-bottom: 1px dashed #d8c9a6;
+  }
+  .duty-memo { font-size: 1.08rem; font-weight: 800; line-height: 1.7; border-left: 7px solid #1e3a8a; padding-right: 5.2rem; }
+  .duty-memo-cap { display: block; font-size: 0.8rem; color: #6b5a43; margin-bottom: 4px; }
+
+  .duty-stamp {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 1.32rem;
+    letter-spacing: 3px;
+    padding: 2px 10px;
+    border: 4px double currentColor;
+    border-radius: 10px;
+    background: rgba(255, 251, 235, 0.92);
+    transform: rotate(-8deg);
+    animation: stampIn 0.32s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+    pointer-events: none;
+  }
+  .duty-stamp.green { color: #15803d; }
+  .duty-stamp.red { color: #dc2626; }
+  .duty-stamp.blue { color: #1d4ed8; }
+
+  .duty-boss { display: flex; gap: 10px; align-items: flex-start; animation: dutyIn 0.35s ease both; }
+  .duty-boss img {
+    flex: 0 0 auto;
+    width: 4.6rem;
+    height: 4.6rem;
+    border-radius: 14px;
+    object-fit: cover;
+    border: 3px solid #b91c1c;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.5);
+  }
+  .duty-boss-intro { text-align: center; }
+  .duty-boss-intro img {
+    width: 9rem;
+    height: 9rem;
+    border-radius: 18px;
+    object-fit: cover;
+    border: 4px solid #b91c1c;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  .duty-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .duty-cards.num { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .duty-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+    background: linear-gradient(160deg, #fffdf5, #f3e4c3);
+    color: #23180b;
+    border: 3px solid var(--gold);
+    border-radius: 14px;
+    padding: 12px 10px;
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.5);
+    animation: dutyIn 0.35s ease both;
+  }
+  .duty-card:hover:not(:disabled) { transform: translateY(-4px); box-shadow: 0 16px 30px rgba(0, 0, 0, 0.6), 0 0 18px rgba(247, 217, 126, 0.6); }
+  .duty-card:disabled { cursor: default; }
+  .duty-card-icon { font-size: 2rem; line-height: 1; }
+  .duty-card-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .duty-card-name { font-family: var(--serif); font-weight: 900; font-size: 1.12rem; color: #14532d; }
+  .duty-card.num .duty-card-name { font-size: 1.34rem; color: #142038; letter-spacing: 1px; }
+  .duty-card-desc { font-weight: 800; font-size: 0.96rem; line-height: 1.5; }
+  .duty-card.is-right { border-color: #16a34a; background: linear-gradient(160deg, #dcfce7, #bbf7d0); }
+  .duty-card.is-wrong { border-color: #dc2626; background: linear-gradient(160deg, #fee2e2, #fecaca); }
+  .duty-card.is-dim { opacity: 0.5; }
+  .duty-num-template { margin-bottom: 0; }
+
+  .duty-result { border-radius: 12px; padding: 10px 14px; font-weight: 800; line-height: 1.6; animation: dutyIn 0.3s ease both; }
+  .duty-result.ok { background: #ecfdf5; border: 2.5px solid #16a34a; color: #14532d; }
+  .duty-result-title { font-weight: 900; font-size: 1.1rem; }
+  .duty-plus { color: #15803d; margin-left: 4px; }
+  .duty-bonus { display: inline-block; color: #b45309; font-weight: 900; margin-left: 8px; }
+  .duty-law {
+    display: inline-block;
+    margin-top: 4px;
+    background: #142038;
+    color: var(--gold-bright);
+    border-radius: 999px;
+    padding: 1px 10px;
+    font-size: 0.84rem;
+    font-weight: 800;
+  }
+
+  .duty-ticket {
+    position: relative;
+    background: #fff7f7;
+    border: 3px solid #dc2626;
+    border-radius: 6px;
+    padding: 10px 14px 12px;
+    color: #450a0a;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55);
+    animation: ticketIn 0.42s cubic-bezier(0.2, 1.2, 0.4, 1) both;
+  }
+  .duty-ticket-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 2px 10px;
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 1.15rem;
+    color: #b91c1c;
+    border-bottom: 2px solid #fca5a5;
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+  }
+  .duty-ticket-head small { font-family: var(--sans); font-size: 0.82rem; color: #7f1d1d; }
+  .duty-ticket-row { font-weight: 800; line-height: 1.6; font-size: 1rem; padding-right: 3.6rem; }
+  .duty-ticket-row .lbl { display: inline-block; min-width: 4.6em; color: #7f1d1d; }
+  .duty-ticket-row .right { color: #14532d; font-weight: 900; }
+  .duty-ticket-row .wrong { text-decoration: line-through; color: #9f1239; }
+  .duty-ticket-seal {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    color: #dc2626;
+    border: 3px solid #dc2626;
+    border-radius: 50%;
+    width: 3.4rem;
+    height: 3.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 0.92rem;
+    transform: rotate(12deg);
+    opacity: 0.8;
+  }
+  .duty-trust-drop { color: #b91c1c; font-weight: 900; margin-top: 4px; }
+
+  .duty-panel {
+    background: linear-gradient(180deg, #fffdf7, #f4e6c8);
+    border: 3px solid var(--gold);
+    border-radius: 16px;
+    padding: 14px 16px;
+    color: #24180b;
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.55);
+    animation: dutyIn 0.35s ease both;
+  }
+  .duty-panel h2 { margin: 0 0 8px; font-family: var(--serif); color: #14532d; font-size: 1.3rem; line-height: 1.4; }
+  .duty-panel p { font-weight: 800; line-height: 1.65; margin: 8px 0; }
+  .duty-rules { margin: 10px 0 4px; padding-left: 1.1em; line-height: 1.7; font-weight: 800; }
+  .duty-rules li { margin: 3px 0; }
+  .duty-best { margin-top: 8px; font-weight: 900; color: #9a6516; }
+  .duty-stars-big { font-size: 2.1rem; color: #f59e0b; text-align: center; letter-spacing: 4px; }
+  .duty-stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 8px 0; }
+  .duty-stat { background: #fffef7; border: 2px solid #e6d3a5; border-radius: 10px; padding: 6px 10px; font-weight: 900; }
+  .duty-stat small { display: block; color: #6b5a43; font-size: 0.78rem; font-weight: 800; }
+  .duty-score-big { text-align: center; font-weight: 900; font-size: 1.08rem; margin: 6px 0; }
+  .duty-score-big b { font-size: 1.5rem; color: #9a6516; }
+  .duty-reward { background: #fef9c3; border: 2px solid #ca8a04; border-radius: 10px; padding: 6px 10px; font-weight: 900; color: #713f12; margin: 8px 0; }
+  .duty-clean { background: #ecfdf5; border: 2px solid #16a34a; border-radius: 10px; padding: 6px 10px; font-weight: 900; color: #14532d; margin-top: 8px; }
+  .duty-sub { margin: 12px 0 4px; font-family: var(--serif); color: #8f1d21; font-size: 1.05rem; }
+  .duty-ticket-list { list-style: none; padding: 0; margin: 6px 0; display: flex; flex-direction: column; gap: 6px; }
+  .duty-ticket-list li {
+    background: #fff7f7;
+    border: 1.5px solid #fca5a5;
+    border-left: 5px solid #dc2626;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-weight: 800;
+    font-size: 0.94rem;
+    line-height: 1.55;
+  }
+
+  /* 開票關：一張張驗選票（沿用找碴關的選票畫法，放大給長輩看） */
+  .duty-ballot {
+    width: 100%;
+    max-width: 380px;
+    margin: 0 auto;
+    padding: 16px 14px 10px;
+    animation: dutyIn 0.4s ease both;
+  }
+  .duty-ballot .ballot-head { font-size: 1rem; }
+  .duty-ballot .ballot-head small { font-size: 0.8rem; }
+  .duty-ballot .ballot-row { grid-template-columns: 32px 22px minmax(0, 1fr); min-height: 36px; font-size: 1.08rem; }
+  .duty-ballot .ballot-mark { width: 32px; height: 32px; }
+  .duty-ballot .ring { width: 25px; height: 25px; border-width: 3px; }
+  .duty-ballot .ballot-no { font-size: 0.86rem; }
+  .duty-ballot .ballot-note { font-size: 0.92rem; }
+  .duty-ballot .stamp.cu { width: 50px; height: 50px; font-size: 0.74rem; }
+  .duty-ballot .stamp.sup { width: 40px; height: 40px; font-size: 0.7rem; }
+  .duty-ballot .stamp-cap { font-size: 0.74rem; }
+  .duty-ballot .duty-stamp { top: 42%; bottom: auto; right: 10px; } /* 蓋在名單右側空白處，不遮社印、監事印 */
+
+  /* 最終關：清冊佐證 */
+  .duty-card.is-struck { opacity: 0.45; filter: grayscale(0.85); border-style: dashed; }
+  .duty-struck-tag {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    background: #475569;
+    color: #f1f5f9;
+    border-radius: 999px;
+    padding: 1px 9px;
+    font-size: 0.76rem;
+    font-weight: 900;
+  }
+  .duty-ledger-line {
+    background: #ecfdf5;
+    border: 2px solid #16a34a;
+    border-radius: 10px;
+    padding: 6px 10px;
+    color: #14532d;
+  }
+  .duty-ledger-badge {
+    display: inline-block;
+    background: #14532d;
+    color: #fef3c7;
+    border: 1.5px solid var(--gold-bright);
+    border-radius: 999px;
+    padding: 1px 9px;
+    font-size: 0.8rem;
+  }
+  .duty-trust-drop.shielded { color: #15803d; }
+
+  /* 玩到才出現的一行小提示；第一件時手冊按鈕發光 */
+  .duty-hint {
+    background: #fef9c3;
+    border: 2px dashed #ca8a04;
+    color: #713f12;
+    border-radius: 10px;
+    padding: 7px 12px;
+    font-weight: 900;
+    font-size: 1rem;
+    line-height: 1.6;
+    animation: dutyIn 0.35s ease both;
+  }
+  .duty-tip { margin-top: 6px; font-size: 0.92rem; color: #92400e; font-weight: 900; }
+  .hud-btn.duty-glow { animation: dutyGlow 1.2s ease-in-out infinite; }
+  @keyframes dutyGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(247, 217, 126, 0); }
+    50% { box-shadow: 0 0 0 4px rgba(247, 217, 126, 0.85); }
+  }
+
+  .duty-manual-tip { font-weight: 800; color: #6b5a43; margin: 0 0 6px; line-height: 1.6; }
+  .duty-manual-item { border-bottom: 1px dashed #d8c9a6; padding: 9px 0; }
+  .duty-manual-item b { color: #14532d; font-size: 1.04rem; }
+  .duty-manual-item p { margin: 3px 0; font-weight: 700; line-height: 1.7; }
+
+  /* 按鈕列跟在申請書、糾正單後面（不浮在畫面底部），一定看完內容才按得到 */
+  .duty-actions {
+    position: relative;
+    z-index: 6;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 2px 0 calc(18px + env(safe-area-inset-bottom, 0px));
+    scroll-margin-bottom: 12px;
+  }
+  .duty-actions.single { grid-template-columns: 1fr; }
+  .duty-actions:empty { display: none; }
+  .duty-act {
+    border-radius: 14px;
+    padding: 14px 10px;
+    font-size: 1.16rem;
+    font-weight: 900;
+    border: 3px solid;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+  }
+  .duty-act.ok { background: linear-gradient(180deg, #dcfce7, #bbf7d0); color: #14532d; border-color: #16a34a; }
+  .duty-act.ng { background: linear-gradient(180deg, #fee2e2, #fecaca); color: #7f1d1d; border-color: #dc2626; }
+  .duty-act.gold { background: linear-gradient(180deg, #fef3c7, #f7d97e); color: #422006; border-color: #c8963e; }
+  .duty-act:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.04); }
+  .duty-next { font-size: 1.12rem; padding: 13px 18px; }
+
+  @keyframes dutyIn {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: none; }
+  }
+  @keyframes ticketIn {
+    0% { opacity: 0; transform: translateY(-22px) rotate(-2deg); }
+    100% { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .duty-visitor, .duty-doc, .duty-memo, .duty-stamp, .duty-boss, .duty-card,
+    .duty-result, .duty-ticket, .duty-panel, .duty-inner.hit-shake,
+    .duty-hint, .hud-btn.duty-glow { animation: none !important; }
+  }
+  @media (max-width: 760px) {
+    .duty-inner { padding: 8px 10px 0; gap: 8px; }
+    .duty-top { padding: 7px 10px; }
+    .duty-day { font-size: 0.98rem; }
+    .duty-cards, .duty-cards.num { grid-template-columns: 1fr; }
+    .duty-card { flex-direction: row; align-items: center; text-align: left; padding: 10px 12px; }
+    .duty-card-icon { font-size: 1.7rem; }
+    .duty-doc-head { padding: 0 0 6px; }
+    .duty-memo { padding-right: 14px; }
+    .duty-act { padding: 13px 8px; font-size: 1.08rem; }
+    .duty-boss img { width: 3.8rem; height: 3.8rem; }
+    .duty-queue { gap: 6px; padding: 5px 8px; min-height: 0; font-size: 0.86rem; }
+    .duty-q-person { width: 1.95rem; height: 1.95rem; font-size: 1.08rem; }
+    .duty-q-mood { font-size: 0.8rem; right: -6px; bottom: -5px; }
+    .duty-tools .hud-btn { padding: 6px 9px; font-size: 0.82rem; }
+    .duty-panel h2 { font-size: 1.12rem; }
+    .duty-panel .duty-avatar { width: 2.6rem; height: 2.6rem; font-size: 1.45rem; }
+  }
 </style>
 </head>
 <body>
@@ -2528,9 +3001,9 @@
           <div class="hud-lv-line" id="hudLvTitle">⚔️ Lv.1 見習選務特派員</div>
           <div class="hud-bars-row">
             <div class="bar-mini-wrap">
-              <span>❤️</span>
-              <div class="bar-mini-track"><div class="bar-mini-fill" id="hudHpFill" style="width:100%;background:linear-gradient(90deg,#16a34a,#4ade80);"></div></div>
-              <span id="hudHpNum">100/100</span>
+              <span title="六關星等">⭐</span>
+              <div class="bar-mini-track"><div class="bar-mini-fill" id="hudHpFill" style="width:0%;background:linear-gradient(90deg,#f59e0b,#fde047);"></div></div>
+              <span id="hudHpNum">0/18</span>
             </div>
             <span class="hud-relic-pill"><img src="./assets_art/relic_seal_3d.webp" alt="" /><span id="hudRelicCnt">聖物 0/6</span></span>
             <span class="hud-relic-pill"><img src="./assets_art/relic_chest_3d.webp" alt="" /><span id="hudChestCnt">清冊 0/6</span></span>
@@ -2665,6 +3138,44 @@
     </div>
   </div>
 </section>
+
+<!-- =========================================================
+     選務值班畫面：文件一件件上門、同事來回報、最後魔王上門出題
+========================================================= -->
+<section id="dutyScreen" aria-label="選務值班">
+  <div class="battle-bg" id="dutyBgImg"></div>
+  <div class="battle-bg-shade"></div>
+  <div class="duty-inner" id="dutyInner">
+    <header class="duty-top">
+      <div class="duty-day" id="dutyDayLabel">第 1 關</div>
+      <div class="duty-stats">
+        <span class="duty-trust" id="dutyTrust" title="公信力：判錯扣 1 點，扣光要重辦這一關"></span>
+        <span class="duty-score" id="dutyScore">得分 0</span>
+        <span class="duty-streak" id="dutyStreak"></span>
+        <span class="duty-progress" id="dutyProgress"></span>
+      </div>
+      <div class="duty-tools">
+        <button class="hud-btn gold" id="btnDutyManual" onclick="openDutyManual()">📘 選務手冊</button>
+        <button class="hud-btn btn-font-toggle" onclick="cycleFontSize()" aria-label="切換字級">🔍 字：標準</button>
+        <button class="hud-btn" id="btnDutyExit" onclick="exitDutyToMap(false)">🗺️ 回地圖</button>
+      </div>
+    </header>
+    <div class="duty-queue" id="dutyQueue"></div>
+    <div class="duty-stage" id="dutyStage"></div>
+    <div class="duty-actions" id="dutyActions"></div>
+  </div>
+</section>
+
+<!-- 📘 選務手冊 Modal（值班中隨時可翻；翻手冊不扣公信力，時間照算） -->
+<div class="modal-backdrop" id="dutyManualModal">
+  <div class="storybook-modal">
+    <div class="sm-head">
+      <span>📘 選務手冊・這一關會用到的規定</span>
+      <button class="hud-btn" onclick="closeModal('dutyManualModal')">✕ 關閉</button>
+    </div>
+    <div class="sm-body" id="dutyManualBody"></div>
+  </div>
+</div>
 
 <!-- 必殺技特寫 Cut-in 演出 -->
 <div id="cutinOverlay">
@@ -3108,7 +3619,8 @@ function toggleMusic() {
   if (musicOn) {
     getAC();
     ensureBgm();
-    setTrack(battle.active ? (battle.node && battle.node.isFinal ? 'boss' : 'battle') : 'town');
+    setTrack(duty.active ? (duty.inBoss ? 'boss' : 'battle')
+      : (battle.active ? (battle.node && battle.node.isFinal ? 'boss' : 'battle') : 'town'));
   } else {
     stopMusic();
     stopBgm();
@@ -3170,11 +3682,13 @@ function audioComeBack() {
 function pageGoAway() {
   audioGoAway();
   pauseLedgerQuiz();
+  pauseDutyClock();
 }
 
 function pageComeBack() {
   audioComeBack();
   resumeLedgerQuiz();
+  resumeDutyClock();
 }
 
 function onAnyTap() {
@@ -3498,7 +4012,7 @@ const NODES = [
         statements: [
           { t: "阿明是本社理事，他太太同時擔任本社監事。", ok: false, law: "選罷辦法 §6-1 第1項", why: "配偶及二親等內之血親，不得同時擔任或分任本社理事、監事。" },
           { t: "專職會計太太的親妹妹，是職員配偶的二親等血親，不能擔任本社理事。", ok: true, law: "選罷辦法 §6-1 第2項", why: "職員、職員配偶及兩者的二親等內血親，都不得擔任理監事或職員。" },
-          { t: "法人社員指派擔任理監事的代表人，也要遵守二親等迴避。", ok: true, law: "選罷辦法 §6-1 第3項", why: "法人社員擔任理監事所指派的代表人，也應符合前兩項規定。" }
+          { t: "法人社員指派擔任理監事的代表人，也要遵守二親等迴避。", ok: true, law: "選罷辦法 §6-1 第3項", why: "法人社員擔任理監事所指派的代表人，也要符合配偶及二親等迴避、職員親屬的限制。" }
         ],
         card: { name: "🔮 二親等照妖令", law: "選罷辦法 §6-1", desc: "夫妻與二親等血親不得同時或分任理監事；職員及其配偶的二親等血親不得當理監事；法人代表人也適用。" },
         key: "夫妻不能一理一監・職員（含配偶）的二親等血親不能當理監事・法人代表人也適用",
@@ -3887,7 +4401,9 @@ function freshPlayer() {
     cards: [],
     missedCards: [],
     stars: {},
-    customBossesCleared: 0
+    customBossesCleared: 0,
+    dutyBest: {},
+    dutySeen: {}
   };
 }
 let player = freshPlayer();
@@ -4065,8 +4581,8 @@ function showMapToast(msg) {
 function renderMapUI() {
   const titles = ["見習選務特派員", "櫃台修法達人", "審查照妖勇者", "禮堂護盾騎士", "開票神眼大師", "三級羅盤賢者", "傳奇選務督導長"];
   document.getElementById('hudLvTitle').textContent = `⚔️ Lv.${player.lv} ${titles[Math.min(player.lv - 1, 6)]}`;
-  document.getElementById('hudHpNum').textContent = `${player.hp}/${player.maxHp}`;
-  document.getElementById('hudHpFill').style.width = `${Math.round((player.hp / player.maxHp) * 100)}%`;
+  document.getElementById('hudHpNum').textContent = `${totalStars()}/${NODES.length * 3}`; // 六關星等
+  document.getElementById('hudHpFill').style.width = `${Math.round((totalStars() / (NODES.length * 3)) * 100)}%`;
   document.getElementById('hudRelicCnt').textContent = `聖物 ${player.relics.length}/6`;
   document.getElementById('hudChestCnt').textContent = `清冊 ${player.openedChests.length}/6`;
   const cbBtn = document.getElementById('btnCardBook');
@@ -4079,7 +4595,7 @@ function renderMapUI() {
   const nextNode = NODES.find(n => !player.clearedNodes.includes(n.id));
   const chestLeft = LEDGER_CHESTS.length - player.openedChests.length;
   document.getElementById('questHintBar').textContent = nextNode
-    ? `🧭 主線目標：前往【${nextNode.zone}】挑戰「${nextNode.name}」，奪取【${nextNode.relic}】！${nextNode.isFinal && chestLeft > 0 ? `（還有 ${chestLeft} 冊移交清冊未點交，點交可破魔王護盾）` : ''}`
+    ? `🧭 主線目標：前往【${nextNode.zone}】挑戰「${nextNode.name}」，奪取【${nextNode.relic}】！${nextNode.isFinal && chestLeft > 0 ? `（還有 ${chestLeft} 冊移交清冊未點交，收齊 3 冊有清冊佐證）` : ''}`
     : `👑 全據點制霸！社大圖記已榮耀歸位，點擊右側隨時領取傳奇勇者合格證書！`;
 
   const layer = document.getElementById('mapMarkersLayer');
@@ -4149,7 +4665,7 @@ function renderMapUI() {
       </div>
       <div class="mob-quest-list">${questCardsHtml}</div>
       <div class="mob-section-title" style="margin-top:4px;">
-        <span>📦 六大移交清冊（答對 HP+20・上限+5）</span>
+        <span>📦 六大移交清冊（收齊 3 冊，最終關有清冊佐證）</span>
         <span style="font-size:0.78rem;color:#cbd5e1;">已收齊 ${player.openedChests.length}/6</span>
       </div>
       <div class="mob-chest-grid">${chestBtnsHtml}</div>
@@ -4293,17 +4809,17 @@ function renderLedgerCard() {
       resultHtml = `
         <div class="lc-result ok">
           <div class="lc-stamp">點交無誤・入庫</div>
-          <div>🎉 獲得【${ch.title}】！HP 回復 +20、HP 上限永久 +5（目前 ${player.hp}/${player.maxHp}）</div>
+          <div>🎉 獲得【${ch.title}】！已收進清冊庫。</div>
           <div style="margin-top:6px;">📖 ${q.explain}</div>
           <span class="lc-law">📜 ${q.law}</span>
           ${ledgerCnt >= allCnt
-            ? '<div style="margin-top:8px;color:#9a6516;font-weight:900;">🌟 六大清冊全數點交！最終魔王戰將發動「六大清冊・合法點交大陣」，證書加蓋「完美清冊制霸印記」！</div>'
-            : `<div style="margin-top:8px;">📒 清冊進度 ${ledgerCnt}/${allCnt}：最終魔王戰每冊開場破盾 −10${ledgerCnt >= 3 ? '，並已解鎖每回合「清冊佐證」助攻' : `，再 ${3 - ledgerCnt} 冊解鎖每回合「清冊佐證」助攻`}。</div>`}
+            ? '<div style="margin-top:8px;color:#9a6516;font-weight:900;">🌟 六大清冊全數點交！最終關過關時發動「六大清冊・合法點交大陣」，證書加蓋「完美清冊制霸印記」！</div>'
+            : `<div style="margin-top:8px;">📒 清冊進度 ${ledgerCnt}/${allCnt}：${ledgerCnt >= 3 ? '已解鎖最終關「清冊佐證」：魔王難題先刪一張錯牌、第一次判錯不扣公信力' : `再 ${3 - ledgerCnt} 冊，就能在最終關解鎖「清冊佐證」`}。</div>`}
         </div>`;
     } else if (stored) {
       resultHtml = `
         <div class="lc-result ok">
-          <div>✅ 本冊已點交入庫（HP 上限 +5 已生效）</div>
+          <div>✅ 本冊已點交入庫</div>
           <div style="margin-top:6px;">📖 ${q.explain}</div>
           <span class="lc-law">📜 ${q.law}</span>
         </div>`;
@@ -4342,7 +4858,7 @@ function renderLedgerCard() {
       <div>
         <div class="lc-hero-title">${ch.title}</div>
         <div class="lc-hero-desc">${ch.desc}</div>
-        <span class="lc-reward-tag">答對入庫：HP +20・上限 +5｜最終魔王開場破盾 −10</span>
+        <span class="lc-reward-tag">答對入庫｜收齊 3 冊，最終關有清冊佐證</span>
       </div>
     </div>
     <div class="lc-section-title">
@@ -4413,7 +4929,7 @@ function answerLedger(optionIdx) {
     playSfx('fanfare');
     renderLedgerCard();
     renderMapUI();
-    showMapToast(`✨ 點交無誤！【${ch.title}】入庫（HP +20、上限 +5）`);
+    showMapToast(`✨ 點交無誤！【${ch.title}】入庫（已點交 ${player.openedChests.length}/${LEDGER_CHESTS.length} 冊）`);
     speakText(`點交無誤，獲得${ch.title}`);
   } else {
     ledgerUI.phase = 'fail';
@@ -4661,6 +5177,8 @@ function showMentor(html) {
 }
 
 function startBattle(node) {
+  // 有值班設定的據點走「選務值班」玩法
+  if (node && DUTY_DAYS[node.id] && startDutyDay(node)) return;
   fxAbort();
   battle.active = true;
   battle.node = node;
@@ -5495,7 +6013,7 @@ function openCardBookModal() {
     const cardsHtml = nd.rounds.map((rd, ri) => {
       const id = cardId(nd, ri);
       if (!player.cards.includes(id)) {
-        return `<div class="cb-card locked"><span class="cb-lock-text">🔒 第 ${ri + 1} 回合答對即可收入</span></div>`;
+        return `<div class="cb-card locked"><span class="cb-lock-text">🔒 完成這一關值班就能收入</span></div>`;
       }
       const c = roundCard(rd);
       const p = splitCardName(c.name);
@@ -5504,7 +6022,7 @@ function openCardBookModal() {
         <div class="cb-card">
           <div class="cb-top">
             <span class="cb-icon" aria-hidden="true">${p.icon}</span>
-            <div><div class="cb-name">${p.title}</div><div class="cb-round">第 ${ri + 1} 回合${rd.type ? `・${roundBadge(rd)}` : ''}</div></div>
+            <div><div class="cb-name">${p.title}</div><div class="cb-round">${dutyCardLabel(nd, rd)}</div></div>
           </div>
           <span class="cb-law">📜 ${c.law}</span>
           <div class="cb-desc">${c.desc}</div>
@@ -5521,7 +6039,7 @@ function openCardBookModal() {
   }).join('');
   const reviewCnt = player.missedCards.filter(id => player.cards.includes(id)).length;
   document.getElementById('cardBookBody').innerHTML = `
-    <div class="cb-summary">📖 每答對一題，那張正確的法規牌就會收進卡冊，隨時可以翻開複習。${reviewCnt ? `目前有 <strong>${reviewCnt}</strong> 張標著「建議複習」，是曾經答錯的題目。` : ''}</div>
+    <div class="cb-summary">📖 每完成一關值班，這一關的法規牌就會收進卡冊，隨時可以翻開複習。${reviewCnt ? `目前有 <strong>${reviewCnt}</strong> 張標著「建議複習」，是曾經判錯過的題型。` : ''}</div>
     ${sections}`;
   document.getElementById('cardBookModal').classList.add('open');
   const body = document.getElementById('cardBookBody');
@@ -5533,7 +6051,7 @@ function openVictoryModal() {
   const acc = Math.round((player.hits / Math.max(1, player.hits + player.misses)) * 100);
   const ledgerCnt = player.openedChests.length;
   const perfect = ledgerCnt >= LEDGER_CHESTS.length;
-  document.getElementById('certStatsLine').textContent = `勇者等級：Lv.${player.lv} ｜ 法規必殺命中率：${acc}% ｜ 星等：★ ${totalStars()}/${NODES.length * 3} ｜ 六大移交清冊：${ledgerCnt}/${LEDGER_CHESTS.length}${perfect ? '（完美點交）' : ''} ｜ 法規卡冊：${(player.cards || []).length}/${CARD_TOTAL}`;
+  document.getElementById('certStatsLine').textContent = `勇者等級：Lv.${player.lv} ｜ 判斷正確率：${acc}% ｜ 星等：★ ${totalStars()}/${NODES.length * 3} ｜ 六大移交清冊：${ledgerCnt}/${LEDGER_CHESTS.length}${perfect ? '（完美點交）' : ''} ｜ 法規卡冊：${(player.cards || []).length}/${CARD_TOTAL}`;
   document.getElementById('certLedgerSeal').classList.toggle('hidden', !perfect);
   refreshCert();
   document.getElementById('victoryModal').classList.add('open');
@@ -5567,6 +6085,1023 @@ function closeModal(id) {
         e.stopPropagation();
       }
     }
+  }, true);
+})();
+
+
+/* =========================================================
+   選務值班：六關都是「一件件判、判錯開糾正單」的玩法
+   ・文件一件件上門（申請書、候選人資料、選務紀錄、選票、罷免案、移交清冊）→ 依各關按鈕判斷；
+     同事來說他的處理或看法 → 沒問題／要糾正；最後魔王上門出難題（出牌、數字牌，答對有必殺技畫面）。
+   ・每件只能判一次：判錯當場開糾正單、扣 1 點公信力；5 點扣光要重辦這一關
+     （已收的卡、星等、存檔都保留）。
+   ・軟性時間壓力：等候表情＋本件秒數；20 秒內判完 +50、40 秒內 +25，慢慢看不扣公信力。
+     關螢幕、切到別的 App 時計時暫停。
+   ・📘 選務手冊隨時可翻（內容依 115.10.03 法規彙編逐條核對）。
+   ・文件每次隨機：第一關的申請書每次重新產生；其他關每份文件隨機換成「合格版」或「不合格版」
+     （每關至少一份合格、一份不合格），重玩不能靠背答案。
+   ・最終關：已點交 3 冊以上移交清冊 →「清冊佐證」：魔王難題先刪一張錯牌、第一次判錯不扣公信力；
+     六冊全齊 → 過關時發動「合法點交大陣」。
+========================================================= */
+const DUTY_TRUST_MAX = 5;
+const DUTY_FAST_MS = 20000;
+const DUTY_OK_MS = 40000;
+const DUTY_BASE = 100;
+const DUTY_BOSS_BASE = 150;
+
+const DUTY_NAMES = ['林美華', '張阿福', '陳秀琴', '李建國', '黃淑芬', '吳志明', '劉玉蘭', '蔡文雄', '楊麗雲', '許榮輝', '鄭春嬌', '謝明德'];
+const DUTY_AVATARS = ['🧑', '🧓', '🧑‍🦳', '🧑‍🦱', '🧑‍🦰']; // 隨機社員用不分性別的頭像，免得和名字給人的印象不搭
+const DUTY_GREETINGS = [
+  '您好，我來登記候選人，資料麻煩您看一下。',
+  '申請書和連署書都在這裡，麻煩收件。',
+  '我要登記這一屆的候選人。',
+  '你好，這是我的登記申請書。'
+];
+const DUTY_REPORT_HINT = '這一條沒問題就按「沒問題」，有問題就按「要糾正」。';
+
+function dutyRand(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+function dutyShuffle(arr) { return shuffledIndexes(arr.length).map(i => arr[i]); }
+function dutyPick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+/* 第一關的送件申請書：每次重新產生。
+   三份一般申請書裡固定有 1～2 份不合格，問題隨機是「逾期」「理事監事都登記」「連署不足」其中一種
+   （每份最多一個問題，糾正單說得清楚）；另有法人社員、現任理事兩份合格的。
+   天數只出 3～12 天或 18～26 天，避開「15 日內」怎麼起算的邊界。 */
+function dutyCounterDocs() {
+  const names = dutyShuffle(DUTY_NAMES).slice(0, 4);
+  const okDay = () => dutyRand(3, 12);
+  const signers = () => dutyRand(3, 5);
+  const LAW = '選罷辦法 §8 第2項';
+  const VERDICT = {
+    late: '超過公告受理之日起 15 日',
+    both: '同一社員不得同時被推薦為理事及監事候選人',
+    few: '登記要檢具社員 3 人以上的書面連署推薦書',
+    ok: '期限、連署人數都合格，也只登記一種職位'
+  };
+  const faults = dutyShuffle(['late', 'both', 'few']).slice(0, dutyRand(1, 2));
+  while (faults.length < 3) faults.push('ok');
+  const docs = faults.map((f, i) => ({
+    title: names[i],
+    lines: [
+      `申請：${f === 'both' ? '理事＋監事候選人' : dutyPick(['理事候選人', '監事候選人'])}`,
+      `送件：公告後第 ${f === 'late' ? dutyRand(18, 26) : okDay()} 天`,
+      `連署：社員 ${f === 'few' ? 2 : signers()} 人書面推薦`
+    ],
+    bad: f !== 'ok',
+    verdict: VERDICT[f],
+    law: LAW
+  }));
+
+  docs.push({
+    title: '○○社區發展協會（法人社員）',
+    lines: ['申請：監事候選人', `送件：公告後第 ${okDay()} 天`, `連署：社員 ${signers()} 人書面推薦`, '代表人：陳大明，符合候選人資格'],
+    bad: false,
+    verdict: '法人社員可參選，指派的代表人要具備候選人資格',
+    law: '選罷辦法 §6 第3項',
+    who: '○○社區發展協會 承辦人',
+    avatar: '🏢',
+    say: '我們協會是法人社員，來登記監事候選人。'
+  });
+
+  docs.push({
+    title: `${names[3]}（現任理事）`,
+    lines: ['申請：理事候選人（已連任過 1 次）', `送件：公告後第 ${okDay()} 天`, `連署：社員 ${signers()} 人書面推薦`],
+    bad: false,
+    verdict: '理事連選得連任；連任以一次為限的是理事長',
+    law: '儲蓄互助社法 §18',
+    say: '這一屆我也要登記理事候選人。'
+  });
+  return docs;
+}
+
+/* 各關的值班設定。
+   docYes／docNo：文件的兩個按鈕；docTarget：糾正單上的對象（{t} 換成文件標題）；
+   variants：第幾份文件的「另一個版本」（合格↔不合格），每次隨機用原版或另一版。
+   手冊與另一版文件的條文，都依 115.10.03 法規彙編原文核對。 */
+const DUTY_DAYS = {
+  n_counter: {
+    stage: 1,
+    title: '候選人登記受理',
+    mentorLine: '登記期間由你坐鎮櫃台！判錯會扣 1 點公信力，5 點扣光就要重辦這一關。慢慢看沒關係。',
+    hints: {
+      doc: '符合規定按「受理」，不符合按「退件」；拿不準可以翻 📘 選務手冊。',
+      report: '同事做對按「沒問題」，做錯按「要糾正」。'
+    },
+    docRole: '社員送件', docYes: '受理', docNo: '退件', docTarget: '{t}的登記申請', startLabel: '▶ 開始營業',
+    staff: [
+      { avatar: '🧑‍💼', who: '櫃台小陳' },
+      { avatar: '👩‍💼', who: '會計小林' },
+      { avatar: '🧑‍💼', who: '櫃台小陳' }
+    ],
+    reportLine: '我這樣處理，您看可以嗎？', reportCap: '處理紀錄',
+    waitMsg: '⏳ 排隊的社員開始看手錶了……',
+    bossTag: '🌙 登記截止', bossNext: '🌙 登記截止…… ▶',
+    bossIntro: '受理登記截止了。櫃台精靈・小美抱著一疊資料，氣沖沖跑來櫃台……',
+    makeDocs: dutyCounterDocs,
+    manual: [
+      { icon: '📅', title: '登記期限', text: '符合候選人資格的社員，應於社公告受理候選人登記之日起 15 日內登記。', law: '選罷辦法 §8 第2項' },
+      { icon: '✍️', title: '書面連署', text: '登記時應檢具社員 3 人以上的書面連署推薦書；每一社員連署推薦以一人為限。', law: '選罷辦法 §8 第2項' },
+      { icon: '⚖️', title: '理事、監事只能擇一', text: '同一社員不得同時被推薦為理事及監事候選人。', law: '選罷辦法 §8 第2項' },
+      { icon: '🏢', title: '法人社員', text: '法人社員得為理事、監事候選人，但法人所指派的代表人應具備候選人資格條件。', law: '選罷辦法 §6 第3項' },
+      { icon: '🔁', title: '連選連任', text: '理事、監事任期 3 年，連選得連任；理事長連選得連任一次。', law: '儲蓄互助社法 §18、§19' },
+      { icon: '📋', title: '登記人數不足', text: '登記名額不足應選出名額時，由理事會決議提名補足。', law: '選罷辦法 §8 第2項' },
+      { icon: '📏', title: '名額與候補', text: '理事 7～21 人、監事 3～7 人；候補理事、候補監事至多不得超過名額三分之一。', law: '儲蓄互助社法 §18、§19／章程範例 §39、§47' },
+      { icon: '💰', title: '欠費抵充（115.02.25 修正）', text: '社員的欠費、借款或擔保債務未能依約償還或付息時，經理事會討論通過，得以該社員的股金抵充，並應以書面通知社員。', law: '章程範例 §17' }
+    ]
+  },
+
+  n_kinship: {
+    stage: 2,
+    title: '候選人資格審查',
+    mentorLine: '登記截止了，換你當候選人資格審查小組！照規定一份份審，判錯一樣扣公信力。',
+    hints: {
+      doc: '資格符合按「合格」，不符合按「不合格」；拿不準可以翻 📘 選務手冊。',
+      report: DUTY_REPORT_HINT
+    },
+    docRole: '候選人資料', docYes: '合格', docNo: '不合格', docTarget: '{t}的候選人資格',
+    docVisitor: { avatar: '🧑‍💼', who: '小組秘書', says: ['下一位候選人的資料，請您審查。', '名冊上的下一位，麻煩您看看。', '這位的資料在這裡。'] },
+    variants: {
+      0: { lines: ['入社：6 年', '年齡：48 歲', '借款：本社、他社都正常', '親屬：沒有人在本社任職'], bad: false,
+           verdict: '入社滿 2 年、年齡在 23～72 足歲之間，借款和親屬也都沒問題', law: '選罷辦法 §4、§6、§6-1' },
+      1: { lines: ['入社：8 年', '年齡：74 歲', '借款：本社、他社都正常', '親屬：沒有人在本社任職'], bad: true,
+           verdict: '超過 72 足歲，不得登記為候選人', law: '選罷辦法 §4、§6 第1項' },
+      2: { lines: ['入社：5 年', '年齡：39 歲', '借款：本社、他社都正常', '親屬：親妹妹（二親等血親）是本社專職會計'], bad: true,
+           verdict: '社的職員及其二親等內血親，不得擔任理監事', law: '選罷辦法 §6-1 第2項' },
+      3: { lines: ['入社：10 年', '年齡：55 歲', '借款：3 年前在他社逾期過 4 個月，最近一年都正常', '親屬：沒有人在本社任職'], bad: false,
+           verdict: '只看最近一年內的借款紀錄，3 年前的不算', law: '選罷辦法 §6 第1項第2款、第2項' }
+    },
+    staff: [
+      { avatar: '👩‍💼', who: '審查委員小許' },
+      { avatar: '👨‍💼', who: '審查委員老蔡' },
+      { avatar: '🧑‍💼', who: '小組秘書' }
+    ],
+    reportLine: '這一條，您看有沒有問題？', reportCap: '同事寫的這一條',
+    waitMsg: '⏳ 其他審查委員在等你……',
+    bossTag: '🌙 審查會議', bossNext: '🌙 審查會議快結束了…… ▶',
+    bossIntro: '審查會議快結束時，二親等皇親國戚一大家子闖了進來……',
+    manual: [
+      { icon: '👥', title: '審查小組', text: '由理事會指定 2 人及監事會指定監事 1 人，成立候選人資格審查小組。', law: '選罷辦法 §9' },
+      { icon: '📅', title: '算到投票日前一日', text: '選舉人及候選人的年齡及入社期間，都算至投票日前一日為止。', law: '選罷辦法 §4' },
+      { icon: '🎂', title: '年資與年齡', text: '候選人應入社為社員滿 2 年，且年滿 23 歲以上、72 足歲以下。', law: '選罷辦法 §6 第1項' },
+      { icon: '💳', title: '借款逾期', text: '最近一年內曾借款逾期還款超過 3 個月者，不得登記；在他社有這種情形也一樣。「最近」以社員大會召開之日的前一日計算。', law: '選罷辦法 §6 第1項第2款、第2項、第4項' },
+      { icon: '👪', title: '親屬迴避', text: '配偶及二親等內之血親，不得同時擔任或分任本社理事、監事。', law: '選罷辦法 §6-1 第1項' },
+      { icon: '🧾', title: '職員的親屬', text: '社的職員、職員配偶及兩者的二親等內血親，不得擔任理監事或職員；法人社員指派擔任理監事的代表人也一樣。', law: '選罷辦法 §6-1 第2項、第3項' },
+      { icon: '⏳', title: '審查與複審期限', text: '登記截止之日起 7 日內審完；不合格的以書面載明理由通知本人，接到通知 3 日內可書面申請複審（以一次為限），小組 3 日內審完。', law: '選罷辦法 §10' }
+    ]
+  },
+
+  n_proxy: {
+    stage: 3,
+    title: '社員大會・投票',
+    mentorLine: '社員大會開始了！投票現場由你坐鎮，監票員會一筆筆回報狀況，判錯一樣扣公信力。',
+    hints: {
+      doc: '處理合乎規定按「合規」，不合規定按「違規」；拿不準可以翻 📘 選務手冊。',
+      report: DUTY_REPORT_HINT
+    },
+    docRole: '現場回報', docYes: '合規', docNo: '違規', docTarget: '選務紀錄「{t}」',
+    docVisitor: { avatar: '🙋‍♂️', who: '監票員小黃', says: ['現場剛剛這樣處理，您看合不合規？', '這筆紀錄請您判斷。', '我記下來了，您看這樣對嗎？'] },
+    variants: {
+      0: { lines: ['主席宣布停止簽到', '報告出席人數及投票截止時間後，發票員才開始發票'], bad: false,
+           verdict: '發票前先停止簽到，並報告出席人數及投票截止時間', law: '選罷辦法 §14' },
+      1: { lines: ['老李不識字', '由陪他來的兒子直接到圈票處替他圈寫'], bad: true,
+           verdict: '代為圈寫只能請監票員或會議推派的代為書寫人', law: '選罷辦法 §17 第2項' },
+      2: { lines: ['3 號桌社員把圈好的票亮給大家看', '監票員當場宣布取消他的選舉權'], bad: true,
+           verdict: '監票員要先警告；不服才報告主席，由主席提經出席人 2/3 以上同意取消', law: '選罷辦法 §18' },
+      3: { lines: ['○○社區發展協會（法人社員）', '負責人沒來，也沒有書面指定代表人', '協會一位會員口頭說要代表出席、領票'], bad: true,
+           verdict: '法人社員要由負責人或書面指定的代表人出席', law: '章程範例 §34' }
+    },
+    staff: [
+      { avatar: '👩‍💼', who: '大會秘書小周' },
+      { avatar: '👩‍💼', who: '大會秘書小周' },
+      { avatar: '🧑‍💼', who: '主席助理阿德' }
+    ],
+    reportLine: '這一條，您看有沒有問題？', reportCap: '同事寫的這一條',
+    waitMsg: '⏳ 排隊領票的社員在等你……',
+    bossTag: '🗳️ 發票時間', bossNext: '🗳️ 要發選票了…… ▶',
+    bossIntro: '要發選票了，委託書大嗓門王伯伯揮著一疊委託書，擠到最前面……',
+    manual: [
+      { icon: '🙋', title: '親自出席', text: '社員大會每一社員有一表決權，不得委託他人行使；法人社員應由負責人或書面指定代表人出席。', law: '章程範例 §34' },
+      { icon: '🗳️', title: '選舉權不得委託', text: '社員因故不能出席社員大會時，不得委託他人行使選舉權或罷免權。', law: '選罷辦法 §5' },
+      { icon: '🎫', title: '親領親投', text: '憑出席證親自領取選舉票一張，親自圈寫、親自投入票匭；不識字或身體殘障無法圈寫時，可請監票員或會議推派的代為書寫人，依本人意旨代為圈寫。', law: '選罷辦法 §17' },
+      { icon: '⏱️', title: '發票前', text: '主席應宣布停止辦理簽到，並報告出席人數及投票截止時間後，才由發票員開始發票。', law: '選罷辦法 §14' },
+      { icon: '🚫', title: '亮票等違規', text: '由監票員先警告；不服警告時報告會議主席，由主席視情節提經出席人 2/3 以上同意，當場取消其選舉權等權利，並記入會議紀錄。', law: '選罷辦法 §18' },
+      { icon: '👥', title: '開會門檻', text: '全體社員 1/5 或成年社員 100 人以上出席，才能開會。', law: '章程範例 §35' },
+      { icon: '📣', title: '不得臨時動議', text: '選舉罷免理事、監事，要在開會通知事由中載明，不得以臨時動議提出。', law: '章程範例 §37 第3項' },
+      { icon: '🔀', title: '移列順序', text: '經出席人數過半數同意，選舉得移列於報告事項之後、討論事項之前舉行。', law: '選罷辦法 §3' },
+      { icon: '✏️', title: '限制連記', text: '改用無記名限制連記法，須經出席人數 1/3 以上同意；圈選不得超過應選名額 1/2。', law: '選罷辦法 §2' }
+    ]
+  },
+
+  n_ballot: {
+    stage: 4,
+    title: '開票唱票',
+    mentorLine: '投票截止，開始開票！唱票員會一張張把選票交給你判定，判錯一樣扣公信力。',
+    hints: {
+      doc: '有效票按「有效」，整張無效按「作廢」；拿不準可以翻 📘 選務手冊。',
+      report: DUTY_REPORT_HINT
+    },
+    docRole: '唱票', docYes: '有效', docNo: '作廢', docTarget: '{t}',
+    docVisitor: { avatar: '🗣️', who: '唱票員小吳', says: ['下一張，請判定！', '這張呢？', '唱到這一張，您看看。'] },
+    variants: {
+      0: { marks: [{ row: 0 }, { row: 2 }], stamps: { cu: true, sup: true }, note: null, bad: false,
+           verdict: '社印、監事印都有，圈選 2 人沒超過應選 3 名', law: '選罷辦法 §12、§20' },
+      1: { marks: [{ row: 1 }, { row: 4 }], stamps: { cu: true, sup: true }, note: null, bad: false,
+           verdict: '雙印齊全、不是用鉛筆，圈選也沒超過應選名額', law: '選罷辦法 §12、§20' },
+      2: { marks: [{ row: 0 }, { row: 2 }], stamps: { cu: true, sup: true }, note: { row: 0, text: '（讚！）' }, bad: true,
+           verdict: '夾寫其他文字，整張無效', law: '選罷辦法 §20 第1項第3款' },
+      3: { marks: [{ row: 0 }, { row: 1 }, { row: 2 }, { row: 4 }], stamps: { cu: true, sup: true }, note: null, bad: true,
+           verdict: '圈選 4 人，超過應選 3 名，整張無效', law: '選罷辦法 §20 第1項第2款' }
+    },
+    staff: [
+      { avatar: '👩‍💼', who: '記票員阿珠' },
+      { avatar: '👨‍💼', who: '監票員老林' },
+      { avatar: '👩‍💼', who: '記票員阿珠' }
+    ],
+    reportLine: '這一條，您看有沒有問題？', reportCap: '同事寫的這一條',
+    waitMsg: '⏳ 唱票員舉著票在等你……',
+    bossTag: '📊 票開完了', bossNext: '📊 票都開完了…… ▶',
+    bossIntro: '票都開完了，一算總數卻不對勁——13款問題選票魔像從票匭裡冒了出來……',
+    manual: [
+      { icon: '🔏', title: '雙印才生效', text: '選票要蓋用社印及監事會推派之監事印章後，才生效力。', law: '選罷辦法 §12' },
+      { icon: '❌', title: '整張無效（常見）', text: '圈選超過應選名額；夾寫其他文字或符號（同姓名的人在姓名下註明區別不算）；用鉛筆圈寫；簽名、蓋章或按指印；完全空白沒圈……共 13 款。', law: '選罷辦法 §20 第1項' },
+      { icon: '✂️', title: '部分無效', text: '圈寫後經塗改等情形如屬部分性質，由主席會同全體監票員認定那一部分無效；有爭議時表決，正反同數就算有效。', law: '選罷辦法 §20 第2項' },
+      { icon: '2️⃣', title: '同一人圈兩次', text: '同一張選票對同一位被選舉人圈寫二次以上，以一票計算。', law: '選罷辦法 §21' },
+      { icon: '🧮', title: '開票方式', text: '以集中開票為原則；選票過多時得分組開票，再彙計各人實得總票數。', law: '選罷辦法 §19' },
+      { icon: '🎲', title: '同票抽籤', text: '票數相同時抽籤決定；當選人未在場或唱名三次仍不抽籤，由會議主席代為抽籤。', law: '選罷辦法 §24' },
+      { icon: '📦', title: '疑有舞弊', text: '截止投票後應即當場開票；發覺有違法舞弊之嫌，主席得會同監票員宣布將票匭加封，報請主管機關核辦，並副知協會。', law: '選罷辦法 §28 第1項' },
+      { icon: '📮', title: '異議與報備', text: '對結果有異議要當場向主席提出，並於 3 日內以書面申請主管機關核辦；結果揭曉後 30 日內，造具當選人簡歷冊報請協會核備。', law: '選罷辦法 §28 第2項、§30' }
+    ]
+  },
+
+  n_tier: {
+    stage: 5,
+    title: '任期、出缺與罷免',
+    mentorLine: '任期、出缺、罷免也有很多眉角！秘書會把案子一件件拿來問你，判錯一樣扣公信力。',
+    hints: {
+      doc: '罷免案合法按「合法」，不合法按「不合法」；拿不準可以翻 📘 選務手冊。',
+      report: DUTY_REPORT_HINT
+    },
+    docRole: '罷免案', docYes: '合法', docNo: '不合法', docTarget: '「{t}」案',
+    docVisitor: { avatar: '👩‍💼', who: '秘書小周', says: ['這件罷免案，您看合不合法？', '又來一件罷免案，請您判斷。', '這件的資料在這裡，麻煩您看看。'] },
+    variants: {
+      0: { lines: ['就任：1 年', '發動：原選舉人總數 1/3 以上簽署'], bad: false,
+           verdict: '就任已滿 6 個月，簽署也達原選舉人總數 1/3', law: '選罷辦法 §33、§34 第1項' },
+      1: { lines: ['就任：1 年', '發動：理事 9 人中 3 人簽署提案', '處理：常務監事召開理事會，出席 2/3 同意'], bad: true,
+           verdict: '理事長的罷免，要理事 1/2 以上簽署提案', law: '選罷辦法 §34 第2項' },
+      2: { lines: ['就任：1 年 2 個月', '發動：原選舉人總數 1/3 以上簽署'], bad: false,
+           verdict: '就任滿 6 個月，簽署達原選舉人總數 1/3', law: '選罷辦法 §33、§34 第1項' },
+      3: { lines: ['就任：1 年 6 個月', '本任期內，上次的罷免會議流會', '這次以另一個新理由提出，原選舉人 1/3 以上簽署'], bad: false,
+           verdict: '流會視為否決，但只限制「同一理由」再提；新理由、簽署也夠', law: '選罷辦法 §34、§38、§40' }
+    },
+    staff: [
+      { avatar: '🧑‍💼', who: '總幹事阿德' },
+      { avatar: '👩‍💼', who: '秘書小周' },
+      { avatar: '👨‍💼', who: '司庫老吳' }
+    ],
+    reportLine: '這一條，您看有沒有問題？', reportCap: '同事寫的這一條',
+    waitMsg: '⏳ 秘書抱著卷宗在等你……',
+    bossTag: '🏯 寶塔頂層', bossNext: '🏯 登上寶塔頂層…… ▶',
+    bossIntro: '三級＆罷免大法師在寶塔頂層等著你，袖子裡還藏著幾道難題……',
+    manual: [
+      { icon: '🏛️', title: '首次理監事會', text: '理監事選出後，於大會閉會第 7 日起至 15 日內，由原任理事長、常務監事分別召開理事會、監事會；要在大會當日召開，須召開大會時一併通知，或經當選的全體理事、監事同意且全數出席。', law: '選罷辦法 §22' },
+      { icon: '📅', title: '任期起算', text: '理事、監事的任期，自召開本屆第一次理事會之日起計算。', law: '選罷辦法 §32' },
+      { icon: '🔁', title: '三級首長連任', text: '社理事長、區會主任委員、協會理事長，連任都以一次為限。', law: '章程範例 §40／區會簡則 §5／協會章程 §14' },
+      { icon: '💳', title: '三級借款紀錄', text: '社的候選人看最近一年內逾期還款超過 3 個月；區會委員、協會理監事看最近三年內逾期還款 3 個月（含）以上。', law: '選罷辦法 §6／區會簡則 §5-1／協會選罷辦法 §6' },
+      { icon: '🪑', title: '出缺遞補', text: '理監事出缺由候補依次遞補，遞補後人數未達章程所定名額 1/2 時才補選足額；理事長、副理事長或常務監事出缺，自出缺之日起 1 個月內補選。', law: '選罷辦法 §25' },
+      { icon: '⏳', title: '就任滿 6 個月', text: '就任之日起滿 6 個月後，才可以罷免。', law: '選罷辦法 §33' },
+      { icon: '✍️', title: '罷免門檻', text: '理監事的罷免，要原選舉人總數 1/3 以上簽署；理事長、副理事長由理事 1/2 以上簽署提案，常務監事召開理事會不記名票選，出席 2/3 以上同意才罷免。', law: '選罷辦法 §34' },
+      { icon: '🚪', title: '流會與再提', text: '罷免會議未達法定人數流會，視為否決；否決後本任期內，不得對同一人以同一理由再提罷免。', law: '選罷辦法 §38、§40' }
+    ]
+  },
+
+  n_vault: {
+    stage: 6,
+    title: '幹部移交與報備',
+    mentorLine: '新理事長選出了，前任理事長卻不想交接！一欄欄驗清冊，判錯一樣扣公信力。',
+    hints: {
+      doc: '這一欄填對按「正確」，填錯按「退回」；拿不準可以翻 📘 選務手冊。',
+      report: DUTY_REPORT_HINT
+    },
+    docRole: '清冊欄位', docYes: '正確', docNo: '退回', docTarget: '清冊「{t}」欄',
+    docVisitor: { avatar: '🧑‍💼', who: '前任理事長的秘書', says: ['清冊這一欄是這樣填的。', '下一欄，請您核對。', '這欄我們寫好了，您看看。'] },
+    variants: {
+      0: { lines: ['一式四份', '當場以一份連同圖記移交新任理事長及監交人'], bad: false,
+           verdict: '清冊造具一式四份，當場以一份連同圖記移交', law: '章程範例 §70 第1項' },
+      1: { lines: ['新任常務監事 陳○○'], bad: false,
+           verdict: '監交人由新任常務監事擔任', law: '章程範例 §70 第2項' },
+      2: { lines: ['新理事長選出後 30 日內接收完畢', '清冊報請協會備查'], bad: true,
+           verdict: '要在 15 日內由新任理事長會同監交人接收完畢', law: '章程範例 §70 第1項' },
+      3: { lines: ['等改選「後」新理事長上任，才開始整理', '圖記、未完成案件、檔案、財務、人事'], bad: true,
+           verdict: '每屆改選「前」就要造具清冊', law: '章程範例 §70 第1項' }
+    },
+    staff: [
+      { avatar: '👩‍💼', who: '新任常務監事' },
+      { avatar: '🧑‍💼', who: '社務人員小鄭' },
+      { avatar: '🧑‍💼', who: '社務人員小鄭' }
+    ],
+    reportLine: '這一條，您看有沒有問題？', reportCap: '同事寫的這一條',
+    waitMsg: '⏳ 新任理事長在等你……',
+    bossTag: '👑 金庫王座', bossNext: '👑 走向金庫王座…… ▶',
+    bossIntro: '抗不移交前任理事長抱著大圖記，坐在金庫王座上不肯下來……',
+    manual: [
+      { icon: '📒', title: '改選前造冊', text: '每屆理事、監事改選前，將圖記、未完成案件、檔案、財務及人事等資料造具清冊一式四份。', law: '章程範例 §70 第1項' },
+      { icon: '🤝', title: '當場移交', text: '下屆理事長選出後，當場以清冊一份連同圖記，移交新任理事長及監交人。', law: '章程範例 §70 第1項' },
+      { icon: '⏳', title: '15 日內接收', text: '15 日內由新任理事長會同監交人接收完畢，並將清冊報請協會備查。', law: '章程範例 §70 第1項' },
+      { icon: '👁️', title: '監交人', text: '監交人由新任常務監事擔任。', law: '章程範例 §70 第2項' },
+      { icon: '🏗️', title: '籌備會也要移交', text: '籌備會主任委員把清冊一式四份移交第一屆理事長，由常務監事監交，15 日內接收完畢；主委與理事長是同一人，仍須辦理移交。', law: '籌備工作實施要點 §9-1' },
+      { icon: '📮', title: '大會紀錄', text: '社員大會紀錄應於會後 15 日內陳報協會審查後，報請主管機關備查。', law: '監督辦法 §12' },
+      { icon: '🏛️', title: '變更登記', text: '理事、監事變動應於 1 個月內辦理變更登記；圖模暨理事長印鑑紙應於每屆改選後，併同變更登記陳報主管機關。', law: '監督辦法 §9 第2項、§10 第2項' },
+      { icon: '⚖️', title: '拒絕移交的刑責', text: '理事、監事或職員拒絕移交，或隱匿、毀損社的財產或帳冊文件，處 1 年以下有期徒刑、拘役或科或併科新臺幣 60 萬元以下罰金。', law: '儲蓄互助社法 §32' }
+    ]
+  }
+};
+
+const duty = {
+  active: false, node: null, cfg: null, phase: 'idle',
+  queue: [], bossQueue: [], bossTotal: 0, bossHits: 0, inBoss: false,
+  cur: null, cards: [], struckIdx: -1, total: 0, ballotSeq: 0,
+  trust: DUTY_TRUST_MAX, score: 0, streak: 0, bestStreak: 0,
+  handled: 0, correct: 0, mistakes: 0, tickets: [], missedRounds: new Set(), times: [],
+  clockStart: 0, clockPausedAt: 0, clockPausedTotal: 0, tickTimer: null,
+  exitArmed: false, lastToast: '', finalWin: false,
+  hintMode: false, hintShown: {},
+  ledgerCount: 0, ledgerAssist: false, ledgerArray: false, ledgerShieldUsed: false
+};
+
+/* ---------- 計時：每件從出現開始算；離開畫面時暫停 ---------- */
+function dutyNow() { return (window.performance && performance.now) ? performance.now() : Date.now(); }
+function startDutyClock() {
+  duty.clockStart = dutyNow();
+  duty.clockPausedTotal = 0;
+  duty.clockPausedAt = (typeof audioAway !== 'undefined' && audioAway.on) ? duty.clockStart : 0;
+  clearInterval(duty.tickTimer);
+  duty.tickTimer = setInterval(dutyTick, 1000);
+}
+function stopDutyClock() { clearInterval(duty.tickTimer); duty.tickTimer = null; }
+function dutyElapsed() {
+  if (!duty.clockStart) return 0;
+  const now = duty.clockPausedAt || dutyNow();
+  return Math.max(0, now - duty.clockStart - duty.clockPausedTotal);
+}
+function pauseDutyClock() {
+  if (duty.active && duty.phase === 'case' && !duty.clockPausedAt) duty.clockPausedAt = dutyNow();
+}
+function resumeDutyClock() {
+  if (!duty.clockPausedAt) return;
+  duty.clockPausedTotal += dutyNow() - duty.clockPausedAt;
+  duty.clockPausedAt = 0;
+}
+function dutyTick() {
+  if (!duty.active || duty.phase !== 'case') return;
+  renderDutyQueue();
+}
+
+function dutyBossShort() {
+  const nm = (duty.node && duty.node.name) || '';
+  return nm.split('・').pop();
+}
+
+/* ---------- 開始一關 ---------- */
+/* 每份文件隨機用原版或另一版；每關至少一份合格、一份不合格 */
+function dutyPickVariants(items, variants) {
+  const list = items || [];
+  if (!variants) return list.map(it => ({ ...it }));
+  let picks = [];
+  for (let tries = 0; tries < 30; tries++) {
+    picks = list.map((it, i) => (variants[i] && Math.random() < 0.5) ? { ...it, ...variants[i] } : { ...it });
+    const bad = picks.filter(p => p.bad).length;
+    if (bad >= 1 && bad <= picks.length - 1) return picks;
+  }
+  return picks;
+}
+
+function dutyBuildCases(node, cfg) {
+  const regular = [];
+  const boss = [];
+  const visitor = cfg.docVisitor || null;
+  node.rounds.forEach((rd, ri) => {
+    const t = roundType(rd);
+    if (t === 'spot') {
+      const isBallot = !isDocSpot(rd);
+      const items = isBallot ? dutyPickVariants(rd.ballots, cfg.variants)
+        : (cfg.makeDocs ? cfg.makeDocs() : dutyPickVariants(rd.docs, cfg.variants));
+      items.forEach(d => {
+        regular.push({
+          kind: 'doc', ballot: isBallot, round: ri, rd, doc: d, bad: !!d.bad, why: d.verdict, law: d.law,
+          title: isBallot ? '' : d.title,
+          who: d.who || (visitor ? visitor.who : String(d.title).replace(/（.*?）/g, '')),
+          avatar: d.avatar || (visitor ? visitor.avatar : dutyPick(DUTY_AVATARS)),
+          say: d.say || dutyPick(visitor ? visitor.says : DUTY_GREETINGS)
+        });
+      });
+    } else if (t === 'judge') {
+      rd.statements.forEach((s, si) => {
+        const p = (cfg.staff && cfg.staff[si]) || { avatar: '🧑‍💼', who: '同事' };
+        regular.push({ kind: 'report', round: ri, rd, text: s.t, ok: !!s.ok, why: s.why, law: s.law, who: p.who, avatar: p.avatar });
+      });
+    } else if (t === 'choice' || t === 'number') {
+      boss.push({ kind: t, round: ri, rd, boss: true, law: rd.correctCard.law, why: rd.correctCard.desc, who: node.name });
+    }
+  });
+  return { regular: dutyShuffle(regular), boss };
+}
+
+function startDutyDay(node) {
+  const cfg = node && DUTY_DAYS[node.id];
+  if (!cfg) return false;
+  fxAbort();
+  if (battle.active) exitBattleToMap();
+  closeModal('victoryModal');
+  const built = dutyBuildCases(node, cfg);
+  stopDutyClock();
+  const ledgerCount = node.isFinal ? (player.openedChests || []).length : 0;
+  Object.assign(duty, {
+    active: true, node, cfg, phase: 'intro',
+    queue: built.regular, bossQueue: built.boss.slice(), bossTotal: built.boss.length, bossHits: 0, inBoss: false,
+    cur: null, cards: [], struckIdx: -1, total: built.regular.length + built.boss.length, ballotSeq: 0,
+    trust: DUTY_TRUST_MAX, score: 0, streak: 0, bestStreak: 0,
+    handled: 0, correct: 0, mistakes: 0, tickets: [], missedRounds: new Set(), times: [],
+    clockStart: 0, clockPausedAt: 0, clockPausedTotal: 0, exitArmed: false, lastToast: '', finalWin: false,
+    hintMode: !player.clearedNodes.includes(node.id), hintShown: {},
+    ledgerCount, ledgerAssist: !!node.isFinal && ledgerCount >= 3,
+    ledgerArray: !!node.isFinal && ledgerCount >= LEDGER_CHESTS.length, ledgerShieldUsed: false
+  });
+  resetDutyExitBtn();
+  document.getElementById('dutyBgImg').style.backgroundImage = `url("${node.bg || './assets_art/bg_hall.webp'}")`;
+  document.getElementById('dutyDayLabel').innerHTML = `第 ${cfg.stage} 關｜${cfg.title}<small>${node.zone}・選務值班</small>`;
+  const scr = document.getElementById('dutyScreen');
+  scr.classList.add('open');
+  scr.scrollTop = 0;
+  if (musicOn) setTrack('battle');
+  renderDutyTop();
+  if (player.dutySeen && player.dutySeen[node.id]) dutyNextCase(); // 看過開場：重玩直接開始
+  else renderDutyIntro();
+  return true;
+}
+
+/* 最終關的清冊佐證說明（一行） */
+function dutyLedgerLine() {
+  if (!duty.node || !duty.node.isFinal) return '';
+  const n = duty.ledgerCount, all = LEDGER_CHESTS.length;
+  if (duty.ledgerArray) return `📒 六冊移交清冊全齊！魔王難題先刪一張錯牌、第一次判錯不扣公信力，過關時發動合法點交大陣。`;
+  if (duty.ledgerAssist) return `📒 已點交 ${n}/${all} 冊清冊：魔王難題先刪一張錯牌，第一次判錯不扣公信力。`;
+  return `📒 已點交 ${n}/${all} 冊清冊；再點交 ${3 - n} 冊，這一關就有「清冊佐證」幫忙。`;
+}
+
+function renderDutyIntro() {
+  const cfg = duty.cfg;
+  const ledger = dutyLedgerLine();
+  document.getElementById('dutyStage').innerHTML = `
+    <div class="duty-panel">
+      <h2>🌅 第 ${cfg.stage} 關｜${cfg.title}</h2>
+      <div class="duty-visitor">
+        <div class="duty-avatar">🧑‍🏫</div>
+        <div class="duty-bubble"><span class="duty-role mentor">選務督導</span>${cfg.mentorLine}</div>
+      </div>
+      ${ledger ? `<p class="duty-ledger-line">${ledger}</p>` : ''}
+    </div>`;
+  setDutyActions(`<button class="btn-storybook-primary duty-next" onclick="dutyNextCase()">${cfg.startLabel || '▶ 開始值班'}</button>`, true);
+  renderDutyQueue();
+  speakText(cfg.mentorLine, false);
+}
+
+/* ---------- 畫面上方：公信力、得分、連續正確、進度 ---------- */
+function renderDutyTop() {
+  const tr = document.getElementById('dutyTrust');
+  if (tr) {
+    tr.innerHTML = `<span class="duty-trust-label">公信力</span>` +
+      Array.from({ length: DUTY_TRUST_MAX }, (_, i) => `<span class="${i < duty.trust ? '' : 'lost'}">🛡️</span>`).join('');
+    tr.setAttribute('aria-label', `公信力剩 ${duty.trust} 點，共 ${DUTY_TRUST_MAX} 點`);
+  }
+  document.getElementById('dutyScore').textContent = `得分 ${duty.score}`;
+  document.getElementById('dutyStreak').textContent = duty.streak >= 2 ? `🔥 連續 ${duty.streak} 件` : '';
+  document.getElementById('dutyProgress').textContent = `已處理 ${duty.handled} / ${duty.total} 件`;
+}
+
+function dutyMood(ms) { return ms < DUTY_FAST_MS ? '😊' : (ms < DUTY_OK_MS ? '😐' : '😣'); }
+
+/* ---------- 排隊列：還在等的人、等候表情、本件計時；魔王階段改顯示魔王的難題數 ---------- */
+function renderDutyQueue() {
+  const el = document.getElementById('dutyQueue');
+  if (!el) return;
+  const cfg = duty.cfg || {};
+  const ms = duty.phase === 'case' ? dutyElapsed() : 0;
+  const sec = Math.floor(ms / 1000);
+  const timer = duty.phase === 'case'
+    ? `<span class="duty-timer ${ms >= DUTY_OK_MS ? 'slow' : (ms >= DUTY_FAST_MS ? 'mid' : '')}">⏱ 本件 ${sec} 秒</span>`
+    : '';
+  const ledgerBadge = duty.ledgerAssist ? '<span class="duty-ledger-badge">📒 清冊佐證</span>' : '';
+  if (duty.phase === 'end') {
+    el.innerHTML = `<span class="duty-queue-label">${duty.trust <= 0 ? '⛔ 暫停值班，等你重辦這一關' : '🌇 今天收工了'}</span>`;
+    return;
+  }
+  if (duty.phase === 'intro') {
+    el.innerHTML = `<span class="duty-queue-label">👥 今天有 ${duty.total} 件要處理</span>${ledgerBadge}`;
+    return;
+  }
+  if (duty.inBoss) {
+    const left = duty.bossQueue.length + (duty.phase === 'case' ? 1 : 0);
+    el.innerHTML = `<span class="duty-queue-label">${cfg.bossTag || '🌙 魔王上門'}・${dutyBossShort()}的難題</span><span class="duty-pips" aria-label="還剩 ${left} 題">${'🔥'.repeat(left)}</span>${ledgerBadge}${timer}`;
+    return;
+  }
+  const mood = dutyMood(ms);
+  const waiting = duty.queue.slice(0, 4).map(c =>
+    `<span class="duty-q-person" title="${c.who}">${c.avatar}<span class="duty-q-mood">${mood}</span></span>`).join('');
+  const more = duty.queue.length > 4 ? `<span class="duty-q-more">＋${duty.queue.length - 4}</span>` : '';
+  const label = duty.queue.length ? `👥 還有 ${duty.queue.length} 件等你處理` : '👥 這是最後一件';
+  const msg = (duty.phase === 'case' && ms >= DUTY_OK_MS && duty.queue.length)
+    ? `<span class="duty-q-msg">${cfg.waitMsg || '⏳ 大家在等你……'}</span>` : '';
+  el.innerHTML = `<span class="duty-queue-label">${label}</span>${ledgerBadge}${waiting}${more}${timer}${msg}`;
+}
+
+function setDutyActions(html, single) {
+  const a = document.getElementById('dutyActions');
+  a.className = `duty-actions ${single ? 'single' : ''}`;
+  a.innerHTML = html;
+}
+
+/* ---------- 下一件 ---------- */
+function dutyNextCase() {
+  if (!duty.active) return;
+  playSfx('click');
+  if (duty.phase === 'intro') {
+    if (!player.dutySeen || typeof player.dutySeen !== 'object' || Array.isArray(player.dutySeen)) player.dutySeen = {};
+    if (!player.dutySeen[duty.node.id]) { player.dutySeen[duty.node.id] = true; saveGame(); }
+  }
+  if (duty.trust <= 0) { dutyFail(); return; }
+  if (!duty.inBoss && duty.queue.length) duty.cur = duty.queue.shift();
+  else if (!duty.inBoss && duty.bossQueue.length) { dutyBossIntro(); return; }
+  else if (duty.inBoss && duty.bossQueue.length) duty.cur = duty.bossQueue.shift();
+  else { dutyFinish(); return; }
+  duty.phase = 'case';
+  renderDutyCase();
+  startDutyClock();
+  renderDutyQueue();
+  renderDutyTop();
+}
+
+function dutyBossIntro() {
+  duty.inBoss = true;
+  duty.phase = 'bossIntro';
+  stopDutyClock();
+  if (musicOn) setTrack('boss');
+  const nd = duty.node;
+  document.getElementById('dutyStage').innerHTML = `
+    <div class="duty-panel duty-boss-intro">
+      <img src="${nd.img}" alt="${nd.name}" />
+      <h2>${duty.cfg.bossIntro}</h2>
+      <p>${dutyBossShort()}有 ${duty.bossQueue.length} 個難題要考你，選對牌就能說服對方。</p>
+    </div>`;
+  setDutyActions(`<button class="btn-storybook-primary duty-next" onclick="dutyNextCase()">⚔️ 接招！</button>`, true);
+  renderDutyQueue();
+  renderDutyTop();
+  document.getElementById('dutyScreen').scrollTop = 0;
+  speakText(duty.cfg.bossIntro, false);
+}
+
+function dutyVisitorHtml(c, roleCls, roleText, line) {
+  return `
+    <div class="duty-visitor">
+      <div class="duty-avatar">${c.avatar}</div>
+      <div class="duty-bubble"><span class="duty-role ${roleCls}">${roleText}</span><b>${c.who}</b>：${line}</div>
+    </div>`;
+}
+
+function dutyCardHtml(cd, i, isNum, struck) {
+  const p = splitCardName(cd.name);
+  return `
+    <button class="duty-card ${isNum ? 'num' : ''} ${struck ? 'is-struck' : ''}" id="dcard_${i}" onclick="dutyPickCard(${i})" ${struck ? 'disabled' : ''}>
+      ${struck ? '<span class="duty-struck-tag">📒 清冊佐證：已排除</span>' : ''}
+      <span class="duty-card-icon" aria-hidden="true">${p.icon}</span>
+      <span class="duty-card-body"><span class="duty-card-name">${p.title}</span><span class="duty-card-desc">${cd.desc}</span></span>
+    </button>`;
+}
+
+/* 選票：沿用找碴關的選票畫法，放大給長輩看 */
+function dutyBallotHtml(rd, b) {
+  const st = Object.assign({ cu: true, sup: true }, b.stamps || {});
+  const rows = (rd.ballotNames || []).map((nm, ri) => {
+    const mk = (b.marks || []).find(m => m.row === ri);
+    const ring = mk
+      ? `<span class="ring ${mk.pencil ? 'pencil' : ''} ${mk.altered ? 'altered' : ''}"></span>${mk.pencil ? '<span class="pencil-tip" aria-hidden="true">✏️</span>' : ''}`
+      : '';
+    const note = b.note && b.note.row === ri ? `<span class="ballot-note">${b.note.text}</span>` : '';
+    return `<span class="ballot-row"><span class="ballot-mark">${ring}</span><span class="ballot-no">${ri + 1}</span><span class="ballot-name">${nm}${note}</span></span>`;
+  }).join('');
+  return `
+    <div class="ballot duty-ballot" id="dutyPaper">
+      <span class="ballot-head">${rd.ballotHead}<small>${rd.ballotSub}</small></span>
+      ${rows}
+      <span class="ballot-stamps">
+        <span class="stamp-slot"><span class="stamp cu ${st.cu ? '' : 'missing'}">${st.cu ? '○○<br>社印' : ''}</span><span class="stamp-cap">社印</span></span>
+        <span class="stamp-slot"><span class="stamp sup ${st.sup ? '' : 'missing'}">${st.sup ? '林<br>印' : ''}</span><span class="stamp-cap">監事印</span></span>
+      </span>
+    </div>`;
+}
+
+function renderDutyCase() {
+  const c = duty.cur;
+  const cfg = duty.cfg;
+  let html = '';
+  if (c.kind === 'doc') {
+    const rd = c.rd;
+    let paper;
+    if (c.ballot) {
+      duty.ballotSeq++;
+      c.title = `第 ${duty.ballotSeq} 張選票`;
+      paper = dutyBallotHtml(rd, c.doc);
+    } else {
+      paper = `
+      <div class="duty-doc" id="dutyPaper">
+        ${rd.docHead ? `<div class="duty-doc-head">📄 ${rd.docHead}${rd.docSub ? `<small>${rd.docSub}</small>` : ''}</div>` : ''}
+        <div class="duty-doc-title">${c.doc.title}</div>
+        ${(c.doc.lines || []).map(t => `<div class="duty-doc-line">${t}</div>`).join('')}
+      </div>`;
+    }
+    html = `
+      ${dutyVisitorHtml(c, '', cfg.docRole || '送件', c.say)}
+      ${paper}
+      <div id="dutyResult" aria-live="polite"></div>`;
+    setDutyActions(`<button class="duty-act ok" onclick="dutyDecide(true)">✅ ${cfg.docYes || '受理'}</button><button class="duty-act ng" onclick="dutyDecide(false)">⛔ ${cfg.docNo || '退件'}</button>`);
+    speakText(`${c.who}：${c.say}`, false);
+  } else if (c.kind === 'report') {
+    html = `
+      ${dutyVisitorHtml(c, 'staff', '同事回報', cfg.reportLine || '我這樣處理，您看可以嗎？')}
+      <div class="duty-memo" id="dutyPaper"><span class="duty-memo-cap">🗂️ ${cfg.reportCap || '處理紀錄'}</span>${c.text}</div>
+      <div id="dutyResult" aria-live="polite"></div>`;
+    setDutyActions(`<button class="duty-act ok" onclick="dutyDecide(true)">👍 沒問題</button><button class="duty-act ng" onclick="dutyDecide(false)">✋ 要糾正</button>`);
+    speakText(`${c.who}：${c.text}`, false);
+  } else {
+    const rd = c.rd;
+    const deck = dutyShuffle([{ ...rd.correctCard, ok: true }, ...rd.wrongCards.map(w => ({ ...w, ok: false }))]);
+    duty.cards = deck;
+    duty.struckIdx = -1;
+    if (duty.ledgerAssist) {
+      const wrongIdx = deck.map((cd, i) => (cd.ok ? -1 : i)).filter(i => i >= 0);
+      if (wrongIdx.length) duty.struckIdx = dutyPick(wrongIdx);
+    }
+    const isNum = c.kind === 'number';
+    const tpl = isNum && Array.isArray(rd.numTemplate) ? `
+      <div class="num-template duty-num-template">
+        <div class="num-template-title">🔢 ${rd.numPrompt || '四張牌只差在數字：哪一張兩格都填對？'}</div>
+        ${rd.numTemplate.map((line, i) => `<div class="num-line"><span class="num-no">${'①②③④'[i] || ''}</span>${line.replace('＿', '<span class="num-blank">？</span>')}</div>`).join('')}
+      </div>` : '';
+    html = `
+      <div class="duty-boss">
+        <img src="${duty.node.img}" alt="${duty.node.name}" />
+        <div class="duty-bubble boss"><span class="duty-role boss">魔王出題</span><b>${duty.node.name}</b>：${rd.enemyAttack}</div>
+      </div>
+      ${tpl}
+      <div class="duty-cards ${isNum ? 'num' : ''}">${deck.map((cd, i) => dutyCardHtml(cd, i, isNum, i === duty.struckIdx)).join('')}</div>
+      <div id="dutyResult" aria-live="polite"></div>`;
+    setDutyActions('', true);
+    speakText(rd.enemyAttack, true);
+  }
+  const hint = dutyTakeHint(c.kind);
+  if (hint) html = html.replace('<div id="dutyResult"', `<div class="duty-hint" id="dutyHint">💡 ${hint}</div><div id="dutyResult"`);
+  document.getElementById('dutyStage').innerHTML = html;
+  document.getElementById('dutyScreen').scrollTop = 0;
+  // 小提示叫玩家翻手冊時，手冊按鈕發光提醒
+  const mb = document.getElementById('btnDutyManual');
+  if (mb) mb.classList.toggle('duty-glow', !!hint && hint.indexOf('選務手冊') >= 0);
+}
+
+/* 還沒過關前，每種案子第一次出現時給一行小提示（同一趟只給一次） */
+function dutyTakeHint(kind) {
+  const hints = (duty.cfg && duty.cfg.hints) || {};
+  if (!duty.hintMode || !hints[kind] || duty.hintShown[kind]) return '';
+  duty.hintShown[kind] = true;
+  return hints[kind];
+}
+
+/* ---------- 判斷 ---------- */
+function dutyDecide(sayYes) {
+  if (!duty.active || duty.phase !== 'case') return;
+  const c = duty.cur;
+  if (c.kind !== 'doc' && c.kind !== 'report') return;
+  const cfg = duty.cfg;
+  const yesIsRight = c.kind === 'doc' ? !c.bad : c.ok;
+  const words = c.kind === 'doc' ? [cfg.docYes || '受理', cfg.docNo || '退件'] : ['沒問題', '要糾正'];
+  const picked = sayYes ? words[0] : words[1];
+  const right = yesIsRight ? words[0] : words[1];
+  const paper = document.getElementById('dutyPaper');
+  if (paper) {
+    const cls = sayYes ? (c.kind === 'doc' ? 'green' : 'blue') : 'red';
+    paper.insertAdjacentHTML('beforeend', `<span class="duty-stamp ${cls}">${picked}</span>`);
+  }
+  document.querySelectorAll('#dutyActions .duty-act').forEach(b => { b.disabled = true; });
+  dutyResolve(sayYes === yesIsRight, { picked, right });
+}
+
+function dutyPickCard(idx) {
+  if (!duty.active || duty.phase !== 'case' || idx === duty.struckIdx) return;
+  const cd = duty.cards[idx];
+  if (!cd) return;
+  const correct = duty.cards.find(x => x.ok);
+  document.querySelectorAll('#dutyStage .duty-card').forEach((b, i) => {
+    b.disabled = true;
+    const x = duty.cards[i];
+    if (x && x.ok) b.classList.add('is-right');
+    else if (i === idx) b.classList.add('is-wrong');
+    else b.classList.add('is-dim');
+  });
+  dutyResolve(!!cd.ok, { picked: cd.name, right: correct ? correct.name : '', cardWhy: cd.why || '' });
+}
+
+function dutyTargetName(c) {
+  if (c.kind === 'doc') return String((duty.cfg && duty.cfg.docTarget) || '{t}').replace('{t}', c.title || '這份文件');
+  if (c.kind === 'report') return `${c.who}的說法`;
+  return `${duty.node.name}的難題`;
+}
+
+function dutyTicketHtml(t, fresh, shielded) {
+  const trustLine = shielded
+    ? '<div class="duty-trust-drop shielded">📒 清冊佐證：這次不扣公信力</div>'
+    : `<div class="duty-trust-drop">🛡️ 公信力 −1（剩 ${duty.trust} 點）</div>`;
+  return `
+    <div class="duty-ticket">
+      <div class="duty-ticket-head"><span>📕 糾正單 第 ${t.no} 號</span><small>${t.target}</small></div>
+      <div class="duty-ticket-row"><span class="lbl">你的處理</span><span class="wrong">${t.picked}</span></div>
+      <div class="duty-ticket-row"><span class="lbl">應該</span><span class="right">${t.right}</span></div>
+      <div class="duty-ticket-row"><span class="lbl">原因</span>${t.why}</div>
+      <span class="duty-law">📜 ${t.law}</span>
+      ${fresh ? trustLine : ''}
+      <span class="duty-ticket-seal" aria-hidden="true">糾正</span>
+    </div>`;
+}
+
+function dutyResolve(isRight, info) {
+  const c = duty.cur;
+  const cfg = duty.cfg;
+  const ms = dutyElapsed();
+  stopDutyClock();
+  duty.phase = 'result';
+  duty.handled++;
+  duty.times.push(ms);
+  const hintEl = document.getElementById('dutyHint');
+  if (hintEl) hintEl.remove();
+  const mbtn = document.getElementById('btnDutyManual');
+  if (mbtn) mbtn.classList.remove('duty-glow');
+  const res = document.getElementById('dutyResult');
+  const inner = document.getElementById('dutyInner');
+
+  if (isRight) {
+    duty.correct++;
+    duty.streak++;
+    duty.bestStreak = Math.max(duty.bestStreak, duty.streak);
+    const bonus = ms <= DUTY_FAST_MS ? 50 : (ms <= DUTY_OK_MS ? 25 : 0);
+    const base = c.boss ? DUTY_BOSS_BASE : DUTY_BASE;
+    duty.score += base + bonus;
+    let speedTip = '';
+    if (duty.hintMode && !duty.hintShown.speed) {
+      duty.hintShown.speed = true;
+      if (!bonus) speedTip = '<div class="duty-tip">⏱ 20 秒內判完會有快手加分（慢慢看不扣公信力）。</div>';
+    }
+    player.hits++;
+    if (c.boss) {
+      duty.bossHits++;
+      playSfx('cutin');
+      triggerCutin(info.picked);
+      speakText(c.rd.heroShout, false);
+    } else {
+      playSfx('harp');
+    }
+    if (res) res.innerHTML = `
+      <div class="duty-result ok">
+        <div class="duty-result-title">✔ ${c.boss ? `說服${dutyBossShort()}了！` : '判斷正確！'}<span class="duty-plus">+${base}</span>${bonus ? `<span class="duty-bonus">⚡ 快手 +${bonus}</span>` : ''}${duty.streak >= 2 ? `<span class="duty-bonus">🔥 連續 ${duty.streak} 件</span>` : ''}</div>
+        <div>${c.boss ? `🔑 ${c.rd.key || c.why}` : `${info.right}：${c.why}`}</div>
+        <span class="duty-law">📜 ${c.law}</span>
+        ${speedTip}
+      </div>`;
+  } else {
+    duty.streak = 0;
+    const shielded = duty.ledgerAssist && !duty.ledgerShieldUsed;
+    if (shielded) duty.ledgerShieldUsed = true;
+    else {
+      duty.mistakes++;
+      duty.trust = Math.max(0, duty.trust - 1);
+    }
+    duty.missedRounds.add(c.round);
+    player.misses++;
+    let why = String(c.why || '');
+    if (!/[。！？]$/.test(why)) why += '。';
+    if (c.boss) {
+      const desc = String((c.rd.correctCard && c.rd.correctCard.desc) || '');
+      why = `${info.cardWhy || ''}正確是：${desc}${/[。！？]$/.test(desc) ? '' : '。'}`;
+    }
+    const t = { no: duty.tickets.length + 1, target: dutyTargetName(c), picked: info.picked, right: info.right, why, law: c.law };
+    duty.tickets.push(t);
+    if (!Array.isArray(player.wrongLog)) player.wrongLog = [];
+    player.wrongLog.push({ boss: duty.node.name, law: c.law, desc: `${t.target}：應該「${t.right}」——${why}` });
+    playSfx('hurt');
+    if (inner) { inner.classList.remove('hit-shake'); void inner.offsetWidth; inner.classList.add('hit-shake'); }
+    if (res) res.innerHTML = dutyTicketHtml(t, true, shielded);
+  }
+  saveGame();
+  renderDutyTop();
+  renderDutyQueue();
+
+  let label;
+  if (duty.trust <= 0) label = '😵 公信力扣光了…… ▶';
+  else if (!duty.inBoss && duty.queue.length) label = isRight ? '下一件 ▶' : '知道了，下一件 ▶';
+  else if (!duty.inBoss && duty.bossQueue.length) label = cfg.bossNext || '🌙 魔王上門了…… ▶';
+  else if (duty.inBoss && duty.bossQueue.length) label = `${dutyBossShort()}還有難題 ▶`;
+  else label = '🌇 收工結算 ▶';
+  setDutyActions(`<button class="btn-storybook-primary duty-next" onclick="dutyNextCase()">${label}</button>`, true);
+  const act = document.getElementById('dutyActions');
+  if (act && act.scrollIntoView) {
+    try { act.scrollIntoView({ block: 'nearest', behavior: FX_REDUCE ? 'auto' : 'smooth' }); } catch (e) { act.scrollIntoView(false); }
+  }
+}
+
+/* ---------- 收工：過關結算／公信力扣光 ---------- */
+function dutyFileCards(success) {
+  const nd = duty.node;
+  if (!Array.isArray(player.cards)) player.cards = [];
+  if (!Array.isArray(player.missedCards)) player.missedCards = [];
+  if (success) nd.rounds.forEach((_, i) => { const id = cardId(nd, i); if (!player.cards.includes(id)) player.cards.push(id); });
+  duty.missedRounds.forEach(r => { const id = cardId(nd, r); if (!player.missedCards.includes(id)) player.missedCards.push(id); });
+}
+
+function dutyTicketListHtml() {
+  if (!duty.tickets.length) return `<div class="duty-clean">✨ 零糾正單！這一關無懈可擊。</div>`;
+  return `
+    <h3 class="duty-sub">📕 這一關收到的糾正單（${duty.tickets.length} 張）</h3>
+    <ul class="duty-ticket-list">${duty.tickets.map(t => `<li><b>第 ${t.no} 號・${t.target}</b>：應該「${t.right}」——${t.why}<br><span class="duty-law">📜 ${t.law}</span></li>`).join('')}</ul>`;
+}
+
+function dutyFinish() {
+  const nd = duty.node;
+  duty.phase = 'end';
+  stopDutyClock();
+  const got = starsFor(duty.mistakes);
+  if (!player.stars || typeof player.stars !== 'object' || Array.isArray(player.stars)) player.stars = {};
+  player.stars[nd.id] = Math.max(bestStars(nd.id), got);
+  const firstClear = !player.clearedNodes.includes(nd.id);
+  if (firstClear) {
+    player.clearedNodes.push(nd.id);
+    player.lv = Math.min(7, player.lv + 1);
+    recalcMaxHp();
+    player.hp = player.maxHp;
+    if (!player.relics.includes(nd.relic)) player.relics.push(nd.relic);
+  }
+  dutyFileCards(true);
+  if (!player.dutyBest || typeof player.dutyBest !== 'object' || Array.isArray(player.dutyBest)) player.dutyBest = {};
+  const prevBest = player.dutyBest[nd.id] || 0;
+  const newRecord = duty.score > prevBest;
+  if (newRecord) player.dutyBest[nd.id] = duty.score;
+  syncCardBook();
+  saveGame();
+  celebrateWin();
+  if (nd.isFinal) {
+    duty.finalWin = true;
+    if (duty.ledgerArray) {
+      setTimeout(() => triggerCutin('合法點交大陣・抗不移交護盾粉碎！', {
+        kicker: '📒 六大清冊・全數點交 📒',
+        img: './assets_art/relic_chest_3d.webp',
+        variant: 'ledger-array',
+        ms: 2800
+      }), 300);
+    }
+  }
+
+  const avg = duty.times.length ? Math.round(duty.times.reduce((a, b) => a + b, 0) / duty.times.length / 1000) : 0;
+  const svc = avg <= 20 ? '⚡ 神速選務' : (avg <= 40 ? '👍 穩健可靠' : '🐢 慢工出細活');
+  const finalWords = (nd.rounds[nd.rounds.length - 1] || {}).bossDefeat || '';
+  const bossLine = (duty.bossHits === duty.bossTotal && finalWords)
+    ? (finalWords.indexOf(nd.name) === 0 ? finalWords : `${nd.name}：${finalWords}`)
+    : `${nd.name}：哼！這次先放你一馬，下次可沒這麼簡單。`;
+  const scoreLine = newRecord
+    ? (prevBest ? `🆕 新紀錄！（之前最佳 ${prevBest} 分）` : '🆕 第一次的紀錄')
+    : `（最佳紀錄 ${prevBest} 分）`;
+  duty.lastToast = `🎉 完成【${nd.zone}】值班！${starText(got)}・得分 ${duty.score}${firstClear ? `，升級 Lv.${player.lv} 並獲得【${nd.relic}】` : ''}`;
+  const leftStages = NODES.filter(n => !player.clearedNodes.includes(n.id)).length;
+  const finalLine = nd.isFinal
+    ? `<div class="duty-reward">👑 ${leftStages ? `最終關完成！（還有 ${leftStages} 關沒過）` : '六關值班全部完成！'}按下方「領取證書」，就能列印榮譽合格證書。${duty.ledgerArray ? '六大清冊全數點交，證書加蓋「完美清冊制霸印記」。' : ''}</div>`
+    : '';
+
+  document.getElementById('dutyStage').innerHTML = `
+    <div class="duty-panel duty-end">
+      <h2>🌇 收工結算：${duty.cfg.title}</h2>
+      <div class="duty-stars-big" aria-label="本關 ${got} 顆星">${starText(got)}</div>
+      <div class="duty-stat-grid">
+        <div class="duty-stat"><small>判斷正確</small>${duty.correct} / ${duty.total} 件</div>
+        <div class="duty-stat"><small>剩下的公信力</small>${duty.trust} / ${DUTY_TRUST_MAX} 點</div>
+        <div class="duty-stat"><small>最高連續正確</small>${duty.bestStreak} 件</div>
+        <div class="duty-stat"><small>平均每件</small>${avg} 秒・${svc}</div>
+      </div>
+      <div class="duty-score-big">得分 <b>${duty.score}</b>　${scoreLine}</div>
+      <p>👹 ${bossLine}</p>
+      ${firstClear ? `<div class="duty-reward">🎁 獲得【${nd.relic}】、升到 Lv.${player.lv}、法規卡冊 +${nd.rounds.length} 張</div>` : ''}
+      ${finalLine}
+      ${dutyTicketListHtml()}
+    </div>`;
+  setDutyActions(nd.isFinal
+    ? `<button class="duty-act gold" onclick="exitDutyToMap(true)">👑 領取證書</button><button class="duty-act ok" onclick="startDutyDay(duty.node)">🔁 再值一次班</button>`
+    : `<button class="duty-act gold" onclick="exitDutyToMap(true)">🗺️ 回地圖</button><button class="duty-act ok" onclick="startDutyDay(duty.node)">🔁 再值一次班</button>`);
+  renderDutyTop();
+  renderDutyQueue();
+  document.getElementById('dutyScreen').scrollTop = 0;
+}
+
+function dutyFail() {
+  duty.phase = 'end';
+  stopDutyClock();
+  dutyFileCards(false);
+  syncCardBook();
+  saveGame();
+  playSfx('hurt');
+  const line = '別灰心！把這幾張糾正單看熟，我們把這一關重新辦一次。';
+  document.getElementById('dutyStage').innerHTML = `
+    <div class="duty-panel duty-fail">
+      <h2>😵 公信力扣光了！</h2>
+      <div class="duty-visitor">
+        <div class="duty-avatar">🧑‍🏫</div>
+        <div class="duty-bubble"><span class="duty-role mentor">選務督導</span>${line}</div>
+      </div>
+      <p>已經收進卡冊的卡、各關星等和存檔都會保留。重辦時要判斷的文件會換一批。</p>
+      ${dutyTicketListHtml()}
+    </div>`;
+  setDutyActions(`<button class="duty-act ok" onclick="startDutyDay(duty.node)">🔁 重辦這一關</button><button class="duty-act gold" onclick="exitDutyToMap(true)">🗺️ 先回地圖</button>`);
+  renderDutyQueue();
+  document.getElementById('dutyScreen').scrollTop = 0;
+  speakText(line, false);
+}
+
+/* ---------- 選務手冊 ---------- */
+function openDutyManual() {
+  playSfx('click');
+  const mb = document.getElementById('btnDutyManual');
+  if (mb) mb.classList.remove('duty-glow');
+  const cfg = duty.cfg || DUTY_DAYS.n_counter;
+  const ledger = dutyLedgerLine();
+  document.getElementById('dutyManualBody').innerHTML = `
+    <p class="duty-manual-tip">這一關會用到的規定都在這裡（依 115.10.03 法規彙編）。翻手冊不扣公信力，但這一件的時間照算。</p>
+    ${ledger ? `<p class="duty-ledger-line">${ledger}</p>` : ''}
+    ${cfg.manual.map(m => `
+      <div class="duty-manual-item">
+        <b>${m.icon} ${m.title}</b>
+        <p>${m.text}</p>
+        <span class="duty-law">📜 ${m.law}</span>
+      </div>`).join('')}
+    ${duty.tickets.length ? `<h3 class="duty-sub">📕 你這一關收到的糾正單</h3><ul class="duty-ticket-list">${duty.tickets.map(t => `<li><b>${t.target}</b>：應該「${t.right}」——${t.why}</li>`).join('')}</ul>` : ''}`;
+  document.getElementById('dutyManualModal').classList.add('open');
+}
+
+/* ---------- 離開：進行到一半要按兩下（第一下變紅，4 秒內沒按第二下就復原） ---------- */
+function resetDutyExitBtn() {
+  clearTimeout(exitDutyToMap._t);
+  duty.exitArmed = false;
+  const btn = document.getElementById('btnDutyExit');
+  if (btn) { btn.textContent = '🗺️ 回地圖'; btn.classList.remove('armed'); }
+}
+
+function exitDutyToMap(force) {
+  const inProgress = duty.active && duty.phase !== 'end' && duty.phase !== 'intro' && duty.handled > 0;
+  if (!force && inProgress && !duty.exitArmed) {
+    duty.exitArmed = true;
+    const btn = document.getElementById('btnDutyExit');
+    if (btn) { btn.textContent = '⚠️ 再按一次離開（這一關要重來）'; btn.classList.add('armed'); }
+    clearTimeout(exitDutyToMap._t);
+    exitDutyToMap._t = setTimeout(resetDutyExitBtn, 4000);
+    return;
+  }
+  resetDutyExitBtn();
+  stopDutyClock();
+  const toast = duty.phase === 'end' ? duty.lastToast : '';
+  const showCert = duty.phase === 'end' && duty.finalWin;
+  duty.active = false;
+  duty.phase = 'idle';
+  duty.finalWin = false;
+  closeModal('dutyManualModal');
+  document.getElementById('dutyScreen').classList.remove('open');
+  const ov = document.getElementById('cutinOverlay');
+  if (ov) ov.classList.remove('active');
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  duckBgm(false);
+  if (musicOn) setTrack('town');
+  renderMapUI();
+  if (toast) showMapToast(toast);
+  if (showCert) setTimeout(openVictoryModal, 450);
+}
+
+/* 法規卡冊上的題型標籤（值班版）：魔王難題／文件／同事回報 */
+function dutyCardLabel(nd, rd) {
+  const cfg = DUTY_DAYS[nd.id];
+  if (!cfg) return rd && rd.type ? roundBadge(rd) : '';
+  const t = roundType(rd);
+  if (t === 'choice' || t === 'number') return '👹 魔王難題';
+  if (t === 'judge') return '🗂️ 同事回報';
+  return `📄 ${cfg.docRole || '文件'}`;
+}
+
+/* 值班中點一下畫面：收起必殺技大字畫面 */
+(function initDutySkip() {
+  const scr = document.getElementById('dutyScreen');
+  if (!scr) return;
+  scr.addEventListener('click', () => {
+    const ov = document.getElementById('cutinOverlay');
+    if (ov && ov.classList.contains('active')) ov.classList.remove('active');
   }, true);
 })();
 
