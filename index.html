@@ -3012,7 +3012,7 @@
     <button class="btn-storybook-primary" id="btnTitleMain" onclick="enterWorldMap(false)">▶ 展開選務冒險旅程</button>
     <div class="title-sub-row">
       <button class="btn-storybook-glass" id="btnContinueTitle" onclick="enterWorldMap(true)">📖 繼續上次進度</button>
-      <button class="btn-storybook-glass" onclick="toggleMusic(); this.textContent = musicOn ? '🎵 繪本交響樂：開' : '🎵 繪本交響樂：關';">🎵 開啟繪本配樂</button>
+      <button class="btn-storybook-glass" id="btnTitleMusic" onclick="toggleMusic()">🎵 開啟繪本配樂</button>
       <button class="btn-storybook-glass btn-font-toggle title-font-btn" onclick="cycleFontSize()" aria-label="切換字級">🔍 字：標準</button>
     </div>
     <div class="voice-notice" id="voiceNotice" role="note" hidden></div>
@@ -3591,7 +3591,7 @@ function playBgm(track) {
     const p = el.play();
     if (p && p.catch) {
       p.catch(err => {
-        if (err && err.name === 'NotAllowedError') return; // 瀏覽器還沒允許播放：等下一次點擊
+        if (err && err.name === 'NotAllowedError') { audioAway.checkOnTap = true; return; } // 瀏覽器還沒允許播放：下一次點畫面時接著播（onAnyTap）
         if (err && err.name === 'AbortError') return;      // 切歌時中斷，屬正常
         if (bgm.track !== track) return;
         bgm.failed[track] = true;
@@ -3646,10 +3646,30 @@ function setTrack(t) {
   playBgm(t);
 }
 
-function toggleMusic() {
-  musicOn = !musicOn;
+/* 配樂偏好：玩家自己按過開關就記住（'on'／'off'）；沒按過的人，進入遊戲時自動開配樂 */
+const MUSIC_PREF_KEY = 'cu_rpg_music_pref';
+function musicPref() {
+  try { return localStorage.getItem(MUSIC_PREF_KEY) || ''; } catch (e) { return ''; }
+}
+function syncMusicButtons() {
   const b = document.getElementById('btnMusic');
   if (b) b.textContent = musicOn ? '🎵 配樂：開' : '🎵 配樂：關';
+  const t = document.getElementById('btnTitleMusic');
+  if (t) t.textContent = musicOn ? '🎵 繪本交響樂：開' : '🎵 開啟繪本配樂';
+}
+/* 按「展開選務冒險旅程」或「繼續上次進度」進入時呼叫：玩家沒關過配樂就自動開
+   （瀏覽器規定點過畫面才能出聲；講師直達連結一打開還沒點過，會等第一次點畫面才響） */
+function autoStartMusic() {
+  if (musicOn || musicPref() === 'off') return;
+  toggleMusic(true);
+}
+
+function toggleMusic(auto) {
+  musicOn = !musicOn;
+  if (auto !== true) {
+    try { localStorage.setItem(MUSIC_PREF_KEY, musicOn ? 'on' : 'off'); } catch (e) {}
+  }
+  syncMusicButtons();
   if (musicOn) {
     getAC();
     ensureBgm();
@@ -4568,6 +4588,7 @@ function enterWorldMap(useSave) {
   document.getElementById('mapScreen').classList.remove('hidden');
   renderMapUI();
   showMapToast("🗺️ 點擊發光的角色據點或 3D 寶箱，展開奇幻選務冒險！");
+  autoStartMusic();
 }
 
 function backToTitle() {
