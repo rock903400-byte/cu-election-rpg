@@ -5,6 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>儲互社選務勇者傳：奪回大圖記！｜典藏繪本 RPG</title>
 <script>
+  /* Android 的 LINE 內建瀏覽器沒有語音朗讀：一打開就請 LINE 改用手機預設瀏覽器開啟
+     （LINE 的 openExternalBrowser=1 參數），保留原本 # 後面的講師直達連結；
+     已經帶過參數就不再跳，避免一直重新整理。iPhone 的 LINE 有朗讀功能，不跳。 */
+  function cuLineEscapeUrl(ua, href) {
+    if (!/\bLine\//.test(ua || '')) return null;
+    if (!/Android/i.test(ua) && ('speechSynthesis' in window)) return null;
+    var parts = String(href).split('#');
+    var base = parts[0];
+    if (/[?&]openExternalBrowser=1(&|$)/.test(base)) return null;
+    return base + (base.indexOf('?') >= 0 ? '&' : '?') + 'openExternalBrowser=1' + (parts.length > 1 ? '#' + parts.slice(1).join('#') : '');
+  }
+  (function () {
+    try {
+      var to = cuLineEscapeUrl(navigator.userAgent, location.href);
+      if (to) location.replace(to);
+    } catch (e) {}
+  })();
+
   /* 依上次選擇的字級（標準／大／特大）在畫面繪製前即時套用，避免字體跳動 */
   (function () {
     try {
@@ -202,6 +220,21 @@
     filter: brightness(1.08);
     box-shadow: 0 12px 34px rgba(247, 217, 126, 0.38);
   }
+
+  /* 沒有語音朗讀功能時的封面提醒 */
+  .voice-notice {
+    width: 100%;
+    background: rgba(254, 243, 199, 0.96);
+    color: #713f12;
+    border: 2px solid #ca8a04;
+    border-radius: 12px;
+    padding: 8px 12px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    text-align: center;
+  }
+  .voice-notice[hidden] { display: none; }
 
   .title-sub-row {
     display: grid;
@@ -2982,6 +3015,7 @@
       <button class="btn-storybook-glass" onclick="toggleMusic(); this.textContent = musicOn ? '🎵 繪本交響樂：開' : '🎵 繪本交響樂：關';">🎵 開啟繪本配樂</button>
       <button class="btn-storybook-glass btn-font-toggle title-font-btn" onclick="cycleFontSize()" aria-label="切換字級">🔍 字：標準</button>
     </div>
+    <div class="voice-notice" id="voiceNotice" role="note" hidden></div>
   </div>
 
   <div class="title-credit">
@@ -3627,7 +3661,28 @@ function toggleMusic() {
   }
 }
 
+/* 這個瀏覽器能不能朗讀：Android 的 LINE 內建瀏覽器就算有這個名稱也念不出來 */
+function ttsBlocked() {
+  const ua = (typeof navigator !== 'undefined' && navigator.userAgent) || '';
+  return (/\bLine\//.test(ua) && /Android/i.test(ua)) || typeof window === 'undefined' || !('speechSynthesis' in window) || !window.speechSynthesis;
+}
+function ttsBlockedMessage() {
+  const ua = (typeof navigator !== 'undefined' && navigator.userAgent) || '';
+  return /\bLine\//.test(ua)
+    ? '🔇 LINE 內建瀏覽器沒有語音朗讀。想聽語音，請點右上角選單，改用瀏覽器開啟。'
+    : '🔇 這個瀏覽器沒有語音朗讀功能，換成 Chrome 或 Safari 打開就有語音。';
+}
+/* 封面提醒＋語音按鈕標「不支援」（有朗讀功能就什麼都不做） */
+function setupVoiceNotice() {
+  if (!ttsBlocked()) return;
+  const el = document.getElementById('voiceNotice');
+  if (el) { el.textContent = ttsBlockedMessage(); el.hidden = false; }
+  const vb = document.getElementById('btnVoice');
+  if (vb) vb.textContent = '🔇 語音：不支援';
+}
+
 function toggleVoice() {
+  if (ttsBlocked()) { showMapToast(ttsBlockedMessage()); return; }
   voiceOn = !voiceOn;
   document.getElementById('btnVoice').textContent = voiceOn ? '🗣️ 語音：開' : '🔇 語音：關';
   if (!voiceOn && window.speechSynthesis) window.speechSynthesis.cancel();
@@ -7110,6 +7165,7 @@ initFontLevel();
 startTitleParticles();
 try {
   setupTitleButtons();
+  setupVoiceNotice();
   const h = (window.location && window.location.hash) || '';
   if (h === '#map') {
     enterWorldMap(false);
