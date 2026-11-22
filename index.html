@@ -523,6 +523,16 @@
     background: linear-gradient(180deg, #16a34a, #14532d);
     border-color: #bbf7d0;
   }
+  /* 最終關上鎖：前五關都過才開放 */
+  .map-node.locked .node-ring {
+    border-color: #94a3b8;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+    filter: grayscale(0.9) brightness(0.72);
+  }
+  .map-node.locked .node-status-tag {
+    background: linear-gradient(180deg, #64748b, #334155);
+    border-color: #cbd5e1;
+  }
 
   .node-label {
     margin-top: 5px;
@@ -1150,6 +1160,42 @@
     overflow-y: auto;
   }
 
+  /* 🔒 最終決戰還沒開放（前五關都過才開） */
+  .final-lock-modal { max-width: 500px; }
+  .final-lock-lead { margin: 0 0 12px; font-weight: 800; font-size: 1.02rem; line-height: 1.65; }
+  .final-lock-list { display: flex; flex-direction: column; gap: 8px; margin: 0 0 12px; }
+  .final-lock-go {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    background: linear-gradient(95deg, #fffdf7 0%, #f3e4c3 100%);
+    border: 2px solid var(--gold);
+    border-radius: 12px;
+    padding: 9px 12px;
+    color: #241709;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+  }
+  .final-lock-go b { display: block; font-family: var(--serif); font-weight: 900; color: #14532d; }
+  .final-lock-go small { display: block; margin-top: 2px; font-size: 0.86rem; font-weight: 700; color: #5c4d3c; }
+  .final-lock-go .final-lock-cta {
+    flex-shrink: 0;
+    background: linear-gradient(180deg, #ef4444, #991b1b);
+    color: #fff;
+    border: 1.5px solid #fef08a;
+    border-radius: 999px;
+    padding: 5px 11px;
+    font-size: 0.86rem;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+  .final-lock-note { margin: 0 0 12px; font-size: 0.92rem; font-weight: 700; color: #5c4d3c; line-height: 1.6; }
+  .final-lock-actions { display: flex; justify-content: flex-end; }
+
   .relic-showcase-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -1722,6 +1768,16 @@
     .mob-quest-card.is-cleared .mob-qc-cta {
       background: linear-gradient(180deg, #16a34a, #14532d);
       border-color: #bbf7d0;
+    }
+    .mob-quest-card.is-locked {
+      background: linear-gradient(95deg, #f1f5f9 0%, #e2e8f0 100%);
+      border-color: #94a3b8;
+    }
+    .mob-quest-card.is-locked .mob-qc-avatar { filter: grayscale(0.9); opacity: 0.8; }
+    .mob-quest-card.is-locked .mob-qc-boss { white-space: normal; overflow: visible; color: #475569; }
+    .mob-quest-card.is-locked .mob-qc-cta {
+      background: linear-gradient(180deg, #64748b, #334155);
+      border-color: #cbd5e1;
     }
 
     .mob-chest-grid {
@@ -3257,6 +3313,17 @@
       <button class="hud-btn" onclick="closeModal('ledgerModal')">✕ 關閉</button>
     </div>
     <div class="sm-body" id="ledgerModalBody"></div>
+  </div>
+</div>
+
+<!-- 🔒 最終決戰還沒開放（前五關都過才開） -->
+<div class="modal-backdrop" id="finalLockModal">
+  <div class="storybook-modal final-lock-modal">
+    <div class="sm-head">
+      <span>🔒 最終決戰還沒開放</span>
+      <button class="hud-btn" onclick="closeModal('finalLockModal')">✕ 關閉</button>
+    </div>
+    <div class="sm-body" id="finalLockBody"></div>
   </div>
 </div>
 
@@ -4978,14 +5045,16 @@ function renderMapUI() {
     `;
   });
 
-  // 繪製 6 大據點頭像徽章
+  // 繪製 6 大據點頭像徽章（最終關：前五關都過才開放）
+  const lockLeft = finalGateLeft().length;
   NODES.forEach(nd => {
     const isCleared = player.clearedNodes.includes(nd.id);
     const isNext = nextNode && nextNode.id === nd.id;
+    const isLocked = isNodeLocked(nd);
     const st = bestStars(nd.id);
-    const tagTxt = isCleared ? (st ? `✅ ${starText(st)}` : '✅ 已過關') : (nd.isFinal ? '👑 最終決戰' : (isNext ? '❗ 下個目標' : '⚔️ 挑戰'));
+    const tagTxt = isCleared ? (st ? `✅ ${starText(st)}` : '✅ 已過關') : (isLocked ? `🔒 再過 ${lockLeft} 關` : (nd.isFinal ? '👑 最終決戰' : (isNext ? '❗ 下個目標' : '⚔️ 挑戰')));
     html += `
-      <button class="map-node ${isCleared ? 'cleared' : ''} ${isNext ? 'active-quest' : ''} ${nd.isFinal ? 'final-boss' : ''}" style="left:${nd.x}%;top:${nd.y}%;" onclick="travelToNode('${nd.id}')">
+      <button class="map-node ${isCleared ? 'cleared' : ''} ${isNext ? 'active-quest' : ''} ${nd.isFinal ? 'final-boss' : ''} ${isLocked ? 'locked' : ''}" style="left:${nd.x}%;top:${nd.y}%;"${isLocked ? ' title="前五關都過，才能挑戰最終決戰"' : ''} onclick="travelToNode('${nd.id}')">
         <span class="node-status-tag">${tagTxt}</span>
         <div class="node-ring"><img src="${nd.img}" alt="${nd.name}" /></div>
         <div class="node-label">${nd.zone}</div>
@@ -5001,14 +5070,15 @@ function renderMapUI() {
     const questCardsHtml = NODES.map((nd, idx) => {
       const isCleared = player.clearedNodes.includes(nd.id);
       const isNext = nextNode && nextNode.id === nd.id;
-      const cta = isCleared ? '✅ 再戰' : (nd.isFinal ? '👑 決戰 ▶' : (isNext ? '❗ 挑戰 ▶' : '⚔️ 挑戰 ▶'));
+      const isLocked = isNodeLocked(nd);
+      const cta = isCleared ? '✅ 再戰' : (isLocked ? `🔒 再過 ${lockLeft} 關` : (nd.isFinal ? '👑 決戰 ▶' : (isNext ? '❗ 挑戰 ▶' : '⚔️ 挑戰 ▶')));
       const st = bestStars(nd.id);
       return `
-        <button class="mob-quest-card ${isCleared ? 'is-cleared' : ''} ${isNext ? 'is-next' : ''} ${nd.isFinal ? 'is-final' : ''}" onclick="travelToNode('${nd.id}')">
+        <button class="mob-quest-card ${isCleared ? 'is-cleared' : ''} ${isNext ? 'is-next' : ''} ${nd.isFinal ? 'is-final' : ''} ${isLocked ? 'is-locked' : ''}" onclick="travelToNode('${nd.id}')">
           <img class="mob-qc-avatar" src="${nd.img}" alt="${nd.name}" />
           <div class="mob-qc-info">
             <div class="mob-qc-zone">${idx + 1}. ${nd.zone}${isCleared && st ? `<span class="mob-qc-stars">${starText(st)}</span>` : ''}</div>
-            <div class="mob-qc-boss">守關：${nd.name} ｜ ${nd.relic}</div>
+            <div class="mob-qc-boss">${isLocked ? '🔒 前五關都過才開放' : `守關：${nd.name} ｜ ${nd.relic}`}</div>
           </div>
           <span class="mob-qc-cta">${cta}</span>
         </button>
@@ -5309,9 +5379,39 @@ function answerLedger(optionIdx) {
   }
 }
 
+/* 最終關上鎖：前五關（順序自己挑）都過了，才能挑戰最終決戰；六關都過才發合格證書。
+   已經過的最終關不再鎖（舊存檔、用講師直達連結玩過的）；講師直達連結 #battle= 直接開關，不經過 travelToNode。 */
+function stageCleared(nd) { return !!nd && player.clearedNodes.includes(nd.id); }
+function finalGateLeft() { return NODES.filter(n => !n.isFinal && !stageCleared(n)); }
+function isNodeLocked(nd) { return !!nd && !!nd.isFinal && !stageCleared(nd) && finalGateLeft().length > 0; }
+function allStagesCleared() { return NODES.every(n => stageCleared(n)); }
+
+function openFinalLockModal() {
+  const left = finalGateLeft();
+  const fin = NODES.find(n => n.isFinal) || {};
+  const chests = player.openedChests.length, allChests = LEDGER_CHESTS.length;
+  document.getElementById('finalLockBody').innerHTML = `
+    <p class="final-lock-lead">前五關都過了，才能挑戰最後的「${fin.name || '最終魔王'}」。前五關的順序你自己挑！還差 ${left.length} 關：</p>
+    <div class="final-lock-list">
+      ${left.map(n => `
+        <button class="final-lock-go" onclick="closeModal('finalLockModal'); travelToNode('${n.id}')">
+          <span><b>第 ${NODES.indexOf(n) + 1} 關・${n.zone}</b><small>${(DUTY_DAYS[n.id] || {}).title || n.name}</small></span>
+          <span class="final-lock-cta">⚔️ 去挑戰</span>
+        </button>`).join('')}
+    </div>
+    ${chests < allChests ? `<p class="final-lock-note">📦 也可以先到地圖上點交移交清冊（已點交 ${chests}/${allChests} 冊）：收齊 3 冊，最終關有「清冊佐證」幫忙。</p>` : ''}
+    <div class="final-lock-actions"><button class="hud-btn gold" onclick="closeModal('finalLockModal')">知道了</button></div>`;
+  document.getElementById('finalLockModal').classList.add('open');
+}
+
 function travelToNode(nodeId) {
   const nd = NODES.find(n => n.id === nodeId);
   if (!nd) return;
+  if (isNodeLocked(nd)) {
+    playSfx('click');
+    openFinalLockModal();
+    return;
+  }
   player.heroX = Math.max(11, nd.x - 8.5);
   player.heroY = Math.min(86, nd.y + 4.5);
   renderMapUI();
@@ -6418,6 +6518,11 @@ function openCardBookModal() {
 }
 
 function openVictoryModal() {
+  // 六關都過才發榮譽合格證書
+  if (!allStagesCleared()) {
+    showMapToast(`🏅 六關都過，才能領合格證書（還差 ${NODES.filter(n => !stageCleared(n)).length} 關）`);
+    return;
+  }
   celebrateWin();
   const acc = Math.round((player.hits / Math.max(1, player.hits + player.misses)) * 100);
   const ledgerCnt = player.openedChests.length;
@@ -7406,8 +7511,9 @@ function dutyFinish() {
   syncCardBook();
   saveGame();
   celebrateWin();
+  const allClear = allStagesCleared();
   if (nd.isFinal) {
-    duty.finalWin = true;
+    duty.finalWin = allClear; // 六關都過才發證書（講師直達連結、舊存檔可能只過了最終關）
     if (duty.ledgerArray) {
       setTimeout(() => triggerCutin('合法點交大陣・抗不移交護盾粉碎！', {
         kicker: '📒 六大清冊・全數點交 📒',
@@ -7429,9 +7535,15 @@ function dutyFinish() {
     : `（最佳紀錄 ${prevBest} 分）`;
   duty.lastToast = `🎉 完成【${nd.zone}】值班！${starText(got)}・得分 ${duty.score}${firstClear ? `，升級 Lv.${player.lv} 並獲得【${nd.relic}】` : ''}`;
   const leftStages = NODES.filter(n => !player.clearedNodes.includes(n.id)).length;
-  const finalLine = nd.isFinal
-    ? `<div class="duty-reward">👑 ${leftStages ? `最終關完成！（還有 ${leftStages} 關沒過）` : '六關值班全部完成！'}按下方「領取證書」，就能列印榮譽合格證書。${duty.ledgerArray ? '六大清冊全數點交，證書加蓋「完美清冊制霸印記」。' : ''}</div>`
-    : '';
+  const finNode = NODES.find(n => n.isFinal);
+  let finalLine = '';
+  if (nd.isFinal) {
+    finalLine = allClear
+      ? `<div class="duty-reward">👑 六關值班全部完成！按下方「領取證書」，就能列印榮譽合格證書。${duty.ledgerArray ? '六大清冊全數點交，證書加蓋「完美清冊制霸印記」。' : ''}</div>`
+      : `<div class="duty-reward">👑 最終關完成！還有 ${leftStages} 關沒過，六關都過才能領合格證書。</div>`;
+  } else if (firstClear && finNode && !stageCleared(finNode) && finalGateLeft().length === 0) {
+    finalLine = `<div class="duty-reward">🔓 前五關都過了，最終決戰開放了！回地圖挑戰「${finNode.name}」。</div>`;
+  }
 
   document.getElementById('dutyStage').innerHTML = `
     <div class="duty-panel duty-end">
@@ -7449,7 +7561,7 @@ function dutyFinish() {
       ${finalLine}
       ${dutyTicketListHtml()}
     </div>`;
-  setDutyActions(nd.isFinal
+  setDutyActions(duty.finalWin
     ? `<button class="duty-act gold" onclick="exitDutyToMap(true)">👑 領取證書</button><button class="duty-act ok" onclick="startDutyDay(duty.node)">🔁 再值一次班</button>`
     : `<button class="duty-act gold" onclick="exitDutyToMap(true)">🗺️ 回地圖</button><button class="duty-act ok" onclick="startDutyDay(duty.node)">🔁 再值一次班</button>`);
   renderDutyTop();
